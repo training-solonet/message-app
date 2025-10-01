@@ -11,7 +11,7 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::get('/schedules', [ScheduleController::class, 'index']);
+Route::get('/schedules', [ScheduleController::class, 'showSchedules']);
 Route::get('/whatsapp/qr', [WhatsAppController::class, 'show']);
 Route::post('/whatsapp/qr', [WhatsAppController::class, 'store']);
 Route::post('/whatsapp/bot-info', [WhatsAppController::class, 'botInfo']);

@@ -2,25 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Schedule;
+use App\Models\Contact;
 use Illuminate\Http\Request;
 
-class ScheduleController extends Controller
+class ContactController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $schedules = Schedule::all();
+        $contacts = Contact::all();
 
-        return view('schedules', compact('schedules'));
-    }
-
-    public function showSchedules()
-    {
-        $schedules = Schedule::with('contacts')->get();
-        return response()->json($schedules);
+        return view('contacts', compact('contacts'));
     }
 
     /**

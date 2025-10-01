@@ -22,8 +22,13 @@
                     </x-nav-link>
                 </div>
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('manage.index') }}" :active="request()->routeIs('manage.index')">
-                        {{ __('Manage') }}
+                    <x-nav-link href="{{ route('schedules.index') }}" :active="request()->routeIs('schedules.index')">
+                        {{ __('Schedules') }}
+                    </x-nav-link>
+                </div>
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('contacts.index') }}" :active="request()->routeIs('contacts.index')">
+                        {{ __('Contacts') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -159,8 +164,13 @@
             </x-responsive-nav-link>
         </div>
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link href="{{ route('manage.index') }}" :active="request()->routeIs('manage.index')">
-                {{ __('Manage') }}
+            <x-responsive-nav-link href="{{ route('schedules.index') }}" :active="request()->routeIs('schedules.index')">
+                {{ __('Schedules') }}
+            </x-responsive-nav-link>
+        </div>
+        <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link href="{{ route('contacts.index') }}" :active="request()->routeIs('contacts.index')">
+                {{ __('Contacts') }}
             </x-responsive-nav-link>
         </div>
 

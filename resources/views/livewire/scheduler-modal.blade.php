@@ -1,6 +1,6 @@
 <div>
     <x-button wire:click="$set('showModal', true)">
-        + Add Auto Message
+        + Add Schedule
     </x-button>
 
     <x-dialog-modal wire:model="showModal">

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Manage') }}
+            {{ __('Contacts') }}
         </h2>
     </x-slot>
 
@@ -10,7 +10,7 @@
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6 lg:p-8 bg-white border-b border-gray-200">
 
-                    <h1 class="mt-2 text-2xl font-medium text-gray-900">
+                    {{-- <h1 class="mt-2 text-2xl font-medium text-gray-900">
                         <strong>Manage your auto messages</strong>
                     </h1>
                     @if(session('message'))
@@ -18,101 +18,35 @@
                             {{ session('message') }}
                         </div>
                     @endif
-                    <div class="container mt-3">
+                    <div class="container mb-5">
                         <h1>Manage the WhatsApp Bot here.</h1>
-
-                        @if($status === 'running')
-                            <p class="text-green-600 font-bold">
-                                🟢 Bot is running (PID: {{ $pid }})
-                            </p>
-                        @else
-                            <p class="text-red-600 font-bold">
-                                🔴 Bot is stopped
-                            </p>
-                        @endif
-                    </div>
-                    <div class="container mt-2 mb-2">
-                        <form action="{{ route('bot.logout') }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit" class="bg-yellow-500 text-white px-4 py-2 rounded">
-                                Logout Bot <i class="fa-solid fa-right-from-bracket ms-2" style="font-size: 12px"></i>
-                            </button>
-                        </form>
-                    </div>
-                    <div class="container mt-5 mb-2">
-                        @if ($status !== 'running')
-                            <form action="{{ route('bot.start') }}" method="POST" class="inline">
-                                @csrf
-                                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Start Bot <i class="fa-solid fa-play ms-2" style="font-size: 12px"></i></button>
-                            </form>
-                        @else
-                            <form action="{{ route('bot.stop') }}" method="POST" class="inline">
-                                @csrf
-                                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded">Stop Bot <i class="fa-solid fa-square ms-2" style="font-size: 12px"></i></button>
-                            </form>
-                        @endif
-                    </div>
+                    </div> --}}
                     <div class="container d-flex align-items-center justify-content-between">
-                        <livewire:scheduler-modal />
-                        <div class="mt-2"></div>
                         <livewire:contact-form-modal />
                     </div>
-                    <div class="container mt-5">
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
-                            <!-- Schedule Table -->
-                            <div>
-                                <h2 class="font-bold text-lg mb-2">Schedules</h2>
-                                <table id="schedulesTable" class="table table-bordered table-striped w-full">
-                                    <thead class="table-dark">
+                    <div class="container mt-2">
+                        <div>
+                            <table id="contactsTable" class="table table-bordered table-striped w-full">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Name</th>
+                                        <th>Phone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php $j = 1; @endphp
+                                    @forelse ($contacts as $contact)
                                         <tr>
-                                            <th>No.</th>
-                                            <th>Scheduler Name</th>
-                                            <th>Message</th>
-                                            <th>Send At</th>
+                                            <td>{{ $j++ }}</td>
+                                            <td>{{ $contact->contact_name }}</td>
+                                            <td>{{ $contact->phone_number }}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php $i = 1; @endphp
-                                        @forelse ($schedules as $schedule)
-                                            <tr>
-                                                <td>{{ $i++ }}</td>
-                                                <td>{{ $schedule->scheduler_name }}</td>
-                                                <td>{{ \Illuminate\Support\Str::limit($schedule->message, 20) }}</td>
-                                                <td>{{ $schedule->schedule_time }}</td>
-                                            </tr>
-                                        @empty
-                                            
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Contact Table -->
-                            <div>
-                                <h2 class="font-bold text-lg mb-2">Contacts</h2>
-                                <table id="contactsTable" class="table table-bordered table-striped w-full">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>No.</th>
-                                            <th>Name</th>
-                                            <th>Phone</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php $j = 1; @endphp
-                                        @forelse ($contacts as $contact)
-                                            <tr>
-                                                <td>{{ $j++ }}</td>
-                                                <td>{{ $contact->contact_name }}</td>
-                                                <td>{{ $contact->phone_number }}</td>
-                                            </tr>
-                                        @empty
-                                            
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
+                                    @empty
+                                        
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -203,12 +137,6 @@
         </div>
     </div>
     <script>
-    $('#schedulesTable').DataTable({
-        "pagingType": "numbers",
-        "language": {
-            "emptyTable": "No data available"
-        }
-    });
     $('#contactsTable').DataTable({
         "pagingType": "numbers",
         "language": {

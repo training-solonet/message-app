@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BotController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\ManageController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
@@ -14,11 +16,14 @@ Route::get('/', function () {
 
 Route::get('/log', [LogController::class, 'index'])->middleware(['auth', 'verified'])->name('log');
 
-Route::resource('manage', ManageController::class)->middleware(['auth', 'verified']);
+// Route::resource('manage', ManageController::class)->middleware(['auth', 'verified']);
 
-Route::post('/manage/start', [ManageController::class, 'startBot'])->middleware(['auth', 'verified'])->name('bot.start');
-Route::post('/manage/stop', [ManageController::class, 'stopBot'])->middleware(['auth', 'verified'])->name('bot.stop');
-Route::get('/manage/status', [ManageController::class, 'status'])->middleware(['auth', 'verified'])->name('bot.status');
+// Route::post('/manage/start', [ManageController::class, 'startBot'])->middleware(['auth', 'verified'])->name('bot.start');
+// Route::post('/manage/stop', [ManageController::class, 'stopBot'])->middleware(['auth', 'verified'])->name('bot.stop');
+// Route::get('/manage/status', [ManageController::class, 'status'])->middleware(['auth', 'verified'])->name('bot.status');
+
+Route::resource('schedules', ScheduleController::class)->middleware(['auth', 'verified']);
+Route::resource('contacts', ContactController::class)->middleware(['auth', 'verified']);
 
 Route::post('/bot/logout', [BotController::class, 'logout'])->middleware(['auth', 'verified'])->name('bot.logout');
 
