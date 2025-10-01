@@ -1,0 +1,26 @@
+<?php
+
+use App\Models\Log;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\WhatsAppController;
+
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+
+Route::get('/schedules', [ScheduleController::class, 'index']);
+Route::get('/whatsapp/qr', [WhatsAppController::class, 'show']);
+Route::post('/whatsapp/qr', [WhatsAppController::class, 'store']);
+Route::post('/whatsapp/bot-info', [WhatsAppController::class, 'botInfo']);
+Route::post('/histories', [HistoryController::class, 'store']);
+Route::get('/histories/{contact_number}', [HistoryController::class, 'historiesByContact']);
+
+Route::post('/logs', function (Request $request) {
+    Log::create([
+        'message' => $request->message,
+    ]);
+    return response()->json(['status' => 'ok']);
+});
