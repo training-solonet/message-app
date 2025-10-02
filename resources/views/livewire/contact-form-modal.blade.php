@@ -1,7 +1,7 @@
 <div>
     <!-- Tombol buka modal -->
     <x-button wire:click="$set('showModal', true)">
-        + Add Contact
+        Add Contact
     </x-button>
 
     <!-- Modal -->

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contact;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
 
@@ -13,8 +14,9 @@ class ScheduleController extends Controller
     public function index()
     {
         $schedules = Schedule::all();
+        $contacts = Contact::all();
 
-        return view('schedules', compact('schedules'));
+        return view('schedules', compact('schedules', 'contacts'));
     }
 
     public function showSchedules()

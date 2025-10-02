@@ -9,139 +9,187 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6 lg:p-8 bg-white border-b border-gray-200">
-
-                    {{-- <h1 class="mt-2 text-2xl font-medium text-gray-900">
-                        <strong>Manage your auto messages</strong>
-                    </h1>
-                    @if(session('message'))
-                        <div class="p-2 bg-yellow-100 text-yellow-800 rounded mb-3">
-                            {{ session('message') }}
-                        </div>
-                    @endif
-                    <div class="container mb-5">
-                        <h1>Manage the WhatsApp Bot here.</h1>
-                    </div> --}}
-                    <div class="container d-flex align-items-center justify-content-between">
+                    <div class="flex justify-between items-center mb-6">
                         <livewire:contact-form-modal />
                     </div>
-                    <div class="container mt-2">
-                        <div>
-                            <table id="contactsTable" class="table table-bordered table-striped w-full">
-                                <thead class="table-dark">
+                    <div class="mt-2">
+                        <div class="overflow-x-auto">
+                            <table id="contactsTable" class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-800 text-white">
                                     <tr>
-                                        <th>No.</th>
-                                        <th>Name</th>
-                                        <th>Phone</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No.</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Phone</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody class="bg-white divide-y divide-gray-200">
                                     @php $j = 1; @endphp
                                     @forelse ($contacts as $contact)
                                         <tr>
-                                            <td>{{ $j++ }}</td>
-                                            <td>{{ $contact->contact_name }}</td>
-                                            <td>{{ $contact->phone_number }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $j++ }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $contact->contact_name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $contact->phone_number }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex space-x-2">
+                                                    <button 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#editModal{{ $contact->id }}"
+                                                        class="inline-flex items-center px-3 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                                                    >
+                                                        <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                    </button>
+                                                    <form action="{{ route('contacts.destroy', $contact) }}" method="POST" class="inline">
+                                                        @csrf @method('DELETE')
+                                                        <button 
+                                                            type="submit" 
+                                                            class="inline-flex items-center px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                                            onclick="return confirm('Are you sure you want to delete this contact?')"
+                                                        >
+                                                            <i class="fa-solid fa-trash mr-1"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
                                         </tr>
                                     @empty
-                                        
+                                        <tr>
+                                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                                No contacts found.
+                                            </td>
+                                        </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-
-                {{-- <div class="bg-gray-200 bg-opacity-25 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 p-6 lg:p-8">
-                    <div>
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="size-6 stroke-gray-400">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                            </svg>
-                            <h2 class="ms-3 text-xl font-semibold text-gray-900">
-                                <a href="https://laravel.com/docs">Documentation</a>
-                            </h2>
-                        </div>
-
-                        <p class="mt-4 text-gray-500 text-sm leading-relaxed">
-                            Laravel has wonderful documentation covering every aspect of the framework. Whether you're new to the framework or have previous experience, we recommend reading all of the documentation from beginning to end.
-                        </p>
-
-                        <p class="mt-4 text-sm">
-                            <a href="https://laravel.com/docs" class="inline-flex items-center font-semibold text-indigo-700">
-                                Explore the documentation
-
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="ms-1 size-5 fill-indigo-500">
-                                    <path fill-rule="evenodd" d="M5 10a.75.75 0 01.75-.75h6.638L10.23 7.29a.75.75 0 111.04-1.08l3.5 3.25a.75.75 0 010 1.08l-3.5 3.25a.75.75 0 11-1.04-1.08l2.158-1.96H5.75A.75.75 0 015 10z" clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                        </p>
-                    </div>
-
-                    <div>
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="size-6 stroke-gray-400">
-                                <path stroke-linecap="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
-                            </svg>
-                            <h2 class="ms-3 text-xl font-semibold text-gray-900">
-                                <a href="https://laracasts.com">Laracasts</a>
-                            </h2>
-                        </div>
-
-                        <p class="mt-4 text-gray-500 text-sm leading-relaxed">
-                            Laracasts offers thousands of video tutorials on Laravel, PHP, and JavaScript development. Check them out, see for yourself, and massively level up your development skills in the process.
-                        </p>
-
-                        <p class="mt-4 text-sm">
-                            <a href="https://laracasts.com" class="inline-flex items-center font-semibold text-indigo-700">
-                                Start watching Laracasts
-
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="ms-1 size-5 fill-indigo-500">
-                                    <path fill-rule="evenodd" d="M5 10a.75.75 0 01.75-.75h6.638L10.23 7.29a.75.75 0 111.04-1.08l3.5 3.25a.75.75 0 010 1.08l-3.5 3.25a.75.75 0 11-1.04-1.08l2.158-1.96H5.75A.75.75 0 015 10z" clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                        </p>
-                    </div>
-
-                    <div>
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="size-6 stroke-gray-400">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                            </svg>
-                            <h2 class="ms-3 text-xl font-semibold text-gray-900">
-                                <a href="https://tailwindcss.com/">Tailwind</a>
-                            </h2>
-                        </div>
-
-                        <p class="mt-4 text-gray-500 text-sm leading-relaxed">
-                            Laravel Jetstream is built with Tailwind, an amazing utility first CSS framework that doesn't get in your way. You'll be amazed how easily you can build and maintain fresh, modern designs with this wonderful framework at your fingertips.
-                        </p>
-                    </div>
-
-                    <div>
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="size-6 stroke-gray-400">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                            </svg>
-                            <h2 class="ms-3 text-xl font-semibold text-gray-900">
-                                Authentication
-                            </h2>
-                        </div>
-
-                        <p class="mt-4 text-gray-500 text-sm leading-relaxed">
-                            Authentication and registration views are included with Laravel Jetstream, as well as support for user email verification and resetting forgotten passwords. So, you're free to get started with what matters most: building your application.
-                        </p>
-                    </div>
-                </div> --}}
-                
             </div>
         </div>
     </div>
+
+    <!-- Edit Modals for each contact -->
+    @foreach ($contacts as $contact)
+    <div class="modal fade fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" id="editModal{{ $contact->id }}" tabindex="-1" aria-labelledby="editModalLabel{{ $contact->id }}" aria-hidden="true">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4" id="editModalLabel{{ $contact->id }}">Edit Contact</h3>
+                <form action="{{ route('contacts.update', $contact) }}" method="POST">
+                    @csrf @method('PUT')
+                    <div class="mb-4">
+                        <label for="contact_name{{ $contact->id }}" class="block text-sm font-medium text-gray-700">Name</label>
+                        <input 
+                            type="text" 
+                            name="contact_name" 
+                            id="contact_name{{ $contact->id }}" 
+                            value="{{ $contact->contact_name }}"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            required
+                        >
+                    </div>
+                    <div class="mb-4">
+                        <label for="phone_number{{ $contact->id }}" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                        <input 
+                            type="text" 
+                            name="phone_number" 
+                            id="phone_number{{ $contact->id }}" 
+                            value="{{ $contact->phone_number }}"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            required
+                        >
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button 
+                            type="button" 
+                            onclick="closeModal('editModal{{ $contact->id }}')" 
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit" 
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endforeach
+
+    <!-- Include DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/dataTables.tailwindcss.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+
+    <!-- Include jQuery and DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    
     <script>
-    $('#contactsTable').DataTable({
-        "pagingType": "numbers",
-        "language": {
-            "emptyTable": "No data available"
+        // Initialize DataTable
+        $(document).ready(function() {
+            $('#contactsTable').DataTable({
+                "pagingType": "numbers",
+                "language": {
+                    "emptyTable": "No contacts available",
+                    "search": "Search:",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                    "infoEmpty": "Showing 0 to 0 of 0 entries",
+                    "paginate": {
+                        "first": "First",
+                        "last": "Last",
+                        "next": "Next",
+                        "previous": "Previous"
+                    }
+                },
+                "responsive": true,
+                "autoWidth": false
+            });
+        });
+
+        // Function to open modal (if using data-bs-toggle)
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
         }
-    });
+
+        // Function to close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            // Check all modals
+            @foreach ($contacts as $contact)
+            const modal{{ $contact->id }} = document.getElementById('editModal{{ $contact->id }}');
+            if (modal{{ $contact->id }} && event.target === modal{{ $contact->id }}) {
+                closeModal('editModal{{ $contact->id }}');
+            }
+            @endforeach
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                @foreach ($contacts as $contact)
+                const modal{{ $contact->id }} = document.getElementById('editModal{{ $contact->id }}');
+                if (modal{{ $contact->id }} && !modal{{ $contact->id }}.classList.contains('hidden')) {
+                    closeModal('editModal{{ $contact->id }}');
+                }
+                @endforeach
+            }
+        });
+
+        // If using Bootstrap JavaScript, you can use this instead
+        // But since we're using Tailwind, we'll handle modals manually
+        document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+            button.addEventListener('click', function() {
+                const targetModal = this.getAttribute('data-bs-target');
+                document.querySelector(targetModal).classList.remove('hidden');
+            });
+        });
     </script>
 </x-app-layout>

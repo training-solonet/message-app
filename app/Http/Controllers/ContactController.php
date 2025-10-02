@@ -30,7 +30,7 @@ class ContactController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
     }
 
     /**
@@ -52,16 +52,23 @@ class ContactController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Contact $contact)
     {
-        //
+        $request->validate([
+            'contact_name' => 'required|string',
+            'phone_number' => 'required|string',
+        ]);
+
+        $contact->update($request->all());
+        return redirect()->back()->with('message', 'Contact updated!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Contact $contact)
     {
-        //
+        $contact->delete();
+        return redirect()->back()->with('message', 'Contact deleted!');
     }
 }
