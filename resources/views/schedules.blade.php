@@ -35,11 +35,13 @@
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex space-x-2">
                                                     <button 
-                                                        onclick="openEditModal('{{ $schedule->id }}', '{{ addslashes($schedule->scheduler_name) }}', '{{ addslashes($schedule->message) }}', '{{ $schedule->schedule_time }}')" 
+                                                        type="button"
+                                                        onclick="document.getElementById('editModal_{{ $schedule->id }}').classList.remove('hidden')"
                                                         class="inline-flex items-center px-3 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
                                                     >
                                                         <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
                                                     </button>
+
                                                     <form action="{{ route('schedules.destroy', $schedule) }}" method="POST" class="inline">
                                                         @csrf @method('DELETE')
                                                         <button 
@@ -53,6 +55,69 @@
                                                 </div>
                                             </td>
                                         </tr>
+
+                                        <!-- Edit Modal per Schedule -->
+                                        <div id="editModal_{{ $schedule->id }}" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+                                            <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+                                                <div class="mt-3">
+                                                    <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Schedule</h3>
+                                                    <form id="editForm_{{ $schedule->id }}" method="POST" action="{{ route('schedules.update', $schedule->id) }}">
+                                                        @csrf @method('PUT')
+                                                        
+                                                        <div class="mt-4">
+                                                            <x-label for="edit_scheduler_name_{{ $schedule->id }}" value="{{ __('Scheduler Name') }}" />
+                                                            <x-input id="edit_scheduler_name_{{ $schedule->id }}" type="text" class="mt-1 block w-full"
+                                                                     name="scheduler_name" required
+                                                                     value="{{ $schedule->scheduler_name }}" />
+                                                        </div>
+
+                                                        <div class="mt-4">
+                                                            <x-label for="edit_schedule_time_{{ $schedule->id }}" value="{{ __('Time (HH:MM)') }}" />
+                                                            <x-input id="edit_schedule_time_{{ $schedule->id }}" type="time" class="mt-1 block w-full"
+                                                                     name="schedule_time" required
+                                                                     value="{{ \Carbon\Carbon::parse($schedule->schedule_time)->format('H:i') }}" />
+                                                        </div>
+
+                                                        <div class="mt-4">
+                                                            <x-label for="edit_message_{{ $schedule->id }}" value="{{ __('Message') }}" />
+                                                            <textarea id="edit_message_{{ $schedule->id }}" name="message" rows="3" 
+                                                                      class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                                                      required>{{ $schedule->message }}</textarea>
+                                                        </div>
+
+                                                        <div class="mt-4">
+                                                            <x-label value="{{ __('Select Contacts') }}" />
+                                                            <div class="space-y-2 max-h-60 overflow-y-auto border border-gray-300 rounded-md p-3">
+                                                                @foreach($contacts as $contact)
+                                                                    <div class="flex items-center">
+                                                                        <input type="checkbox" 
+                                                                               name="selectedContacts[]" 
+                                                                               value="{{ $contact->id }}" 
+                                                                               id="edit_contact_{{ $schedule->id }}_{{ $contact->id }}"
+                                                                               class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                                               {{ $schedule->contacts->contains($contact->id) ? 'checked' : '' }}>
+                                                                        <label for="edit_contact_{{ $schedule->id }}_{{ $contact->id }}" class="ms-2 text-sm text-gray-700">
+                                                                            {{ $contact->contact_name }} ({{ $contact->phone_number }})
+                                                                        </label>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="flex justify-end space-x-3 mt-6">
+                                                            <x-secondary-button type="button" onclick="document.getElementById('editModal_{{ $schedule->id }}').classList.add('hidden')">
+                                                                {{ __('Cancel') }}
+                                                            </x-secondary-button>
+
+                                                            <x-button type="submit">
+                                                                {{ __('Update') }}
+                                                            </x-button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     @empty
                                         <tr>
                                             <td colspan="5" class="px-6 py-4 text-center text-gray-500">
@@ -69,66 +134,6 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
-    <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Schedule</h3>
-                <form id="editForm" method="POST">
-                    @csrf @method('PUT')
-                    
-                    <div class="mt-4">
-                        <x-label for="edit_scheduler_name" value="{{ __('Scheduler Name') }}" />
-                        <x-input id="edit_scheduler_name" type="text" class="mt-1 block w-full"
-                                 name="scheduler_name" required />
-                    </div>
-
-                    <div class="mt-4">
-                        <x-label for="edit_schedule_time" value="{{ __('Time (HH:MM)') }}" />
-                        <x-input id="edit_schedule_time" type="time" class="mt-1 block w-full"
-                                 name="schedule_time" required />
-                    </div>
-
-                    <div class="mt-4">
-                        <x-label for="edit_message" value="{{ __('Message') }}" />
-                        <textarea id="edit_message" name="message" rows="3" 
-                                  class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                  required></textarea>
-                    </div>
-
-                    <div class="mt-4">
-                        <x-label value="{{ __('Select Contacts') }}" />
-                        <div class="space-y-2 max-h-60 overflow-y-auto border border-gray-300 rounded-md p-3">
-                            @foreach($contacts as $contact)
-                                <div class="flex items-center">
-                                    <input 
-                                        type="checkbox" 
-                                        name="selectedContacts[]" 
-                                        value="{{ $contact->id }}" 
-                                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                        id="edit_contact_{{ $contact->id }}">
-                                    <label for="edit_contact_{{ $contact->id }}" class="ms-2 text-sm text-gray-700">
-                                        {{ $contact->contact_name }} ({{ $contact->phone_number }})
-                                    </label>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end space-x-3 mt-6">
-                        <x-secondary-button type="button" onclick="closeEditModal()">
-                            {{ __('Cancel') }}
-                        </x-secondary-button>
-
-                        <x-button type="submit">
-                            {{ __('Update') }}
-                        </x-button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- Include DataTables CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/dataTables.tailwindcss.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
@@ -136,9 +141,8 @@
     <!-- Include jQuery and DataTables JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    
+
     <script>
-        // Initialize DataTable
         $(document).ready(function() {
             $('#schedulesTable').DataTable({
                 "pagingType": "numbers",
@@ -158,43 +162,6 @@
                 "responsive": true,
                 "autoWidth": false
             });
-        });
-
-        function openEditModal(scheduleId, schedulerName, message, scheduleTime) {
-            console.log('Opening modal with:', scheduleId, schedulerName, message, scheduleTime);
-            
-            // Set form action URL
-            document.getElementById('editForm').action = `/schedules/${scheduleId}`;
-            
-            // Fill form with current data
-            document.getElementById('edit_scheduler_name').value = schedulerName;
-            document.getElementById('edit_message').value = message;
-            
-            // Format schedule_time for time input (extract time part only)
-            const timePart = scheduleTime.split(' ')[1] || scheduleTime;
-            document.getElementById('edit_schedule_time').value = timePart;
-            
-            // Show modal
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('editModal');
-            if (event.target === modal) {
-                closeEditModal();
-            }
-        }
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeEditModal();
-            }
         });
     </script>
 </x-app-layout>

@@ -62,7 +62,28 @@ class ScheduleController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $schedule = Schedule::findOrFail($id);
+
+        $request->validate([
+            'scheduler_name' => 'required|string|min:3',
+            'message' => 'required|string|min:1',
+            'schedule_time' => 'required|date_format:H:i',
+            'selectedContacts' => 'required|array',
+            'selectedContacts.*' => 'exists:contacts,id',
+        ]);
+
+        // Update schedule record
+        $schedule->update([
+            'scheduler_name' => $request->scheduler_name,
+            'message' => $request->message,
+            'schedule_time' => $request->schedule_time,
+        ]);
+
+        // Update kontak terkait di pivot table
+        $schedule->contacts()->sync($request->selectedContacts);
+
+        return redirect()->route('schedules.index')
+                        ->with('message', 'Schedule updated successfully.');
     }
 
     /**
