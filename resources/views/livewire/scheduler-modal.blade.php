@@ -25,31 +25,27 @@
 
             <div class="mt-2">
                 <x-label for="message" value="{{ __('Message') }}" />
-                <textarea id="message" class="mt-1 block w-full"
+                <textarea id="message" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                           wire:model.defer="message"></textarea>
                 <x-input-error for="message" class="mt-2" />
             </div>
 
             <div class="mt-4">
-                        <x-label value="{{ __('Select Contacts') }}" />
-                        <div class="space-y-2 max-h-60 overflow-y-auto border border-gray-300 rounded-md p-3">
-                            
-                            @foreach($contacts as $contact)
-                            <div class="form-check">
-                                <input 
-                                type="checkbox" 
-                                wire:model="selectedContacts" 
-                                value="{{ $contact->id }}" 
-                                class="form-check-input rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                id="contact-{{ $contact->id }}">
-                                <label for="contact-{{ $contact->id }}" class="form-check-label">
-                                    {{ $contact->contact_name }} ({{ $contact->phone_number }})
-                                </label>
-                            </div>
-                            @endforeach
-                            @error('selectedContacts') <span class="text-danger">{{ $message }}</span>@enderror
-                        </div>
-                    </div>
+                <x-label value="{{ __('Select Category') }}" />
+                <select 
+                    wire:model="selectedCategory" 
+                    class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                >
+                    <option value="">-- Select a Category --</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->category_name }}</option>
+                    @endforeach
+                </select>
+                @error('selectedCategory') 
+                    <span class="text-danger">{{ $message }}</span> 
+                @enderror
+            </div>
+
         </x-slot>
 
         <x-slot name="footer">

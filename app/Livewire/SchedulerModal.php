@@ -3,8 +3,9 @@
 namespace App\Livewire;
 
 use App\Models\Contact;
+use App\Models\Category;
+use App\Models\Schedule;
 use Livewire\Component;
-use App\Models\Schedule; // model scheduler kamu
 
 class SchedulerModal extends Component
 {
@@ -13,38 +14,55 @@ class SchedulerModal extends Component
     public $scheduler_name;
     public $message;
     public $schedule_time;
-    public $selectedContacts = [];
+    public $selectedCategory = ''; 
+    public $categories = [];
 
     protected $rules = [
         'scheduler_name' => 'required|string|max:13',
         'message' => 'required|string|max:255',
         'schedule_time' => 'required|date_format:H:i',
-        'selectedContacts' => 'required|array|min:1'
+        'selectedCategory' => 'required|exists:categories,id',
     ];
+
+    public function mount()
+    {
+        // Load all categories from the categories table
+        $this->categories = Category::all();
+    }
 
     public function save()
     {
         $this->validate();
 
+        // Get all contacts belonging to the selected category_id
+        $contacts = Contact::where('category_id', $this->selectedCategory)->get();
+
+        if ($contacts->isEmpty()) {
+            $this->addError('selectedCategory', 'No contacts found in this category.');
+            return;
+        }
+
+        // Create a new schedule
         $schedule = Schedule::create([
             'scheduler_name' => $this->scheduler_name,
             'message' => $this->message,
             'schedule_time' => $this->schedule_time,
         ]);
 
-        $schedule->contacts()->attach($this->selectedContacts);
+        // Attach all contact IDs under that category
+        $schedule->contacts()->attach($contacts->pluck('id')->toArray());
 
-        $this->reset(['scheduler_name', 'message', 'schedule_time', 'selectedContacts', 'showModal']);
+        // Reset form
+        $this->reset(['scheduler_name', 'message', 'schedule_time', 'selectedCategory', 'showModal']);
 
-        $this->dispatch('schedulerAdded'); // buat refresh tabel di ManageController
+        // Notify parent
+        $this->dispatch('schedulerAdded');
 
-        return redirect()->route('manage.index');
+        return redirect()->route('schedules.index');
     }
 
     public function render()
     {
-        return view('livewire.scheduler-modal', [
-            'contacts' => Contact::all(),
-        ]);
+        return view('livewire.scheduler-modal');
     }
 }

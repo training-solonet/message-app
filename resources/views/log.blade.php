@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Logcat') }}
+            {{ __('Logs') }}
         </h2>
     </x-slot>
 
@@ -13,39 +13,36 @@
                     <h1 class="mt-2 text-2xl font-medium text-gray-900">
                         <strong>Logs</strong>
                     </h1>
-                    <div class="container mt-2">
-                        <h2>Monitor your logs here.</h2>
+                    <p class="text-gray-600 mt-1">Monitor your logs here.</p>
 
-                        <div class="container mt-5">
-                            <table id="logsTable" class="table table-bordered table-striped mt-3">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>No.</th>
-                                        <th>Message</th>
-                                        <th>Time</th>
+                    <div class="mt-6 overflow-x-auto">
+                        <table id="logsTable" class="min-w-full border border-gray-200 rounded-lg text-sm text-gray-800">
+                            <thead class="bg-gray-800 text-white text-center">
+                                <tr>
+                                    <th class="py-3 px-4 border-b border-gray-300">No.</th>
+                                    <th class="py-3 px-4 border-b border-gray-300">Message</th>
+                                    <th class="py-3 px-4 border-b border-gray-300">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php $i = 1; @endphp
+                                @forelse ($logs as $log)
+                                    <tr class="hover:bg-gray-100 transition">
+                                        <td class="py-2 px-4 border-b border-gray-200 text-center">{{ $i++ }}</td>
+                                        <td class="py-2 px-4 border-b border-gray-200">{{ $log->message }}</td>
+                                        <td class="py-2 px-4 border-b border-gray-200 text-center">{{ $log->created_at }}</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $i = 1;
-                                    @endphp
-                                    @forelse ($logs as $log)
-                                        <tr>
-                                            <td>{{ $i++ }}</td>
-                                            <td>{{ $log->message }}</td>
-                                            <td>{{ $log->created_at }}</td>
-                                        </tr>
-                                    @empty
-                                        
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
+                                @empty
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
+
     <script>
     $('#logsTable').DataTable({
         "order": [[2, "desc"]],

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
@@ -12,9 +13,10 @@ class ContactController extends Controller
      */
     public function index()
     {
-        $contacts = Contact::all();
+        $contacts = Contact::with('category')->get();
+        $categories = Category::all();
 
-        return view('contacts', compact('contacts'));
+        return view('contacts', compact('contacts', 'categories'));
     }
 
     /**
@@ -56,10 +58,16 @@ class ContactController extends Controller
     {
         $request->validate([
             'contact_name' => 'required|string',
+            'category_id' => 'required|string',
             'phone_number' => 'required|string',
         ]);
 
-        $contact->update($request->all());
+        $contact->update([
+            'contact_name' => $request->contact_name,
+            'category_id' => $request->category_id,
+            'phone_number' => $request->phone_number,
+        ]);
+
         return redirect()->back()->with('message', 'Contact updated!');
     }
 

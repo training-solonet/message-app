@@ -3,22 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Category;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
 
 class ScheduleController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of schedules.
      */
     public function index()
     {
-        $schedules = Schedule::all();
+        $schedules = Schedule::with('contacts')->get();
         $contacts = Contact::all();
+        $categories = Category::all(); // Fetch all categories
 
-        return view('schedules', compact('schedules', 'contacts'));
+        return view('schedules', compact('schedules', 'contacts', 'categories'));
     }
 
+    /**
+     * Return schedules as JSON.
+     */
     public function showSchedules()
     {
         $schedules = Schedule::with('contacts')->get();
@@ -26,71 +31,49 @@ class ScheduleController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
+     * Update the specified schedule.
      */
     public function update(Request $request, string $id)
     {
         $schedule = Schedule::findOrFail($id);
 
-        $request->validate([
-            'scheduler_name' => 'required|string|min:3',
-            'message' => 'required|string|min:1',
+        $validated = $request->validate([
+            'scheduler_name' => 'required|string|min:3|max:50',
+            'message' => 'required|string|min:1|max:255',
             'schedule_time' => 'required|date_format:H:i',
-            'selectedContacts' => 'required|array',
-            'selectedContacts.*' => 'exists:contacts,id',
+            'selectedCategory' => 'required|exists:categories,id',
         ]);
 
-        // Update schedule record
+        // Update schedule
         $schedule->update([
-            'scheduler_name' => $request->scheduler_name,
-            'message' => $request->message,
-            'schedule_time' => $request->schedule_time,
+            'scheduler_name' => $validated['scheduler_name'],
+            'message' => $validated['message'],
+            'schedule_time' => $validated['schedule_time'],
         ]);
 
-        // Update kontak terkait di pivot table
-        $schedule->contacts()->sync($request->selectedContacts);
+        // Sync contacts by category_id
+        $contactIds = Contact::where('category_id', $validated['selectedCategory'])
+            ->pluck('id')
+            ->toArray();
 
-        return redirect()->route('schedules.index')
-                        ->with('message', 'Schedule updated successfully.');
+        $schedule->contacts()->sync($contactIds);
+
+        return redirect()
+            ->route('schedules.index')
+            ->with('message', 'Schedule updated successfully for category.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete a schedule.
      */
     public function destroy(string $id)
     {
-        //
+        $schedule = Schedule::findOrFail($id);
+        $schedule->contacts()->detach();
+        $schedule->delete();
+
+        return redirect()
+            ->route('schedules.index')
+            ->with('message', 'Schedule deleted successfully.');
     }
 }

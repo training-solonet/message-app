@@ -7,6 +7,7 @@ use App\Http\Controllers\BotController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\ManageController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\DashboardController;
 
@@ -24,6 +25,7 @@ Route::get('/log', [LogController::class, 'index'])->middleware(['auth', 'verifi
 
 Route::resource('schedules', ScheduleController::class)->middleware(['auth', 'verified']);
 Route::resource('contacts', ContactController::class)->middleware(['auth', 'verified']);
+Route::resource('categories', CategoryController::class)->middleware(['auth', 'verified']);
 
 Route::post('/bot/logout', [BotController::class, 'logout'])->middleware(['auth', 'verified'])->name('bot.logout');
 
