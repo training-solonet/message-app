@@ -32,7 +32,8 @@ class HistoryController extends Controller
         $request->validate([
             'contact_number' => 'required|string',
             'message' => 'required|string',
-            'direction' => 'required|string',
+            'direction' => 'required|in:in,out',
+            'status' => 'required|in:sent,failed',
         ]);
 
         $contact = Contact::where('phone_number', $request->contact_number)->first();
@@ -48,13 +49,14 @@ class HistoryController extends Controller
             'contact_id' => $contact->id,
             'message' => $request->message,
             'direction' => $request->direction,
+            'status' => $request->status,
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Pesan berhasil disimpan',
             'data' => $history,
-        ]);
+        ], 201);
     }
 
     /**

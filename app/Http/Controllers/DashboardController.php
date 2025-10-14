@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -12,13 +13,15 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $contacts = Contact::with(['histories' => function($q) {
+        $contacts = Contact::with(['category','histories' => function($q) {
                 $q->orderBy('created_at', 'asc'); // ambil semua pesan urut dari lama ke baru
             }])
             ->orderBy('contact_name', 'asc')
             ->get();
+        
+        $categories = Category::all();
 
-        return view('dashboard', compact('contacts'));
+        return view('dashboard', compact('contacts','categories'));
     }
 
     /**
@@ -56,9 +59,35 @@ class DashboardController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'contact_name' => 'required|string|max:255',
+            'phone_number' => 'required|string|max:20',
+            'category' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $contact = Contact::findOrFail($id);
+
+            $contact->update([
+                'contact_name' => $request->contact_name,
+                'phone_number' => $request->phone_number,
+                'category' => $request->category,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contact updated successfully.',
+                'contact' => $contact
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating contact: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

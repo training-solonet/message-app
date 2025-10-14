@@ -209,17 +209,18 @@ async function safeSend(number, message, retries = 3) {
             console.log("✅ Pesan terkirim ke " + number);
             saveLog(`Message sent to ${number}`);
 
-            contactNumber = number.replace(/@c\.us$/, "");
+            const contactNumber = number.replace(/@c\.us$/, "");
 
-            try{
+            try {
                 await axios.post(`${API_BASE}/histories`, {
                     contact_number: contactNumber,
                     message: message,
                     direction: "out",
+                    status: "sent",
                 });
                 console.log("✅ Pesan keluar disimpan ke histories");
                 saveLog("Outgoing message saved to histories");
-            } catch (err){
+            } catch (err) {
                 console.error("❌ Gagal simpan pesan keluar: ", err.message);
                 saveLog(`Failed to save outgoing message: ${err.message}`);
             }
@@ -228,9 +229,26 @@ async function safeSend(number, message, retries = 3) {
         } catch (err) {
             console.error(`❌ Percobaan ${attempt} gagal:`, err.message);
             saveLog(`Attempt ${attempt} failed: ${err.message}`);
+
+            // 🧩 Add this block to save the failed message in histories
+            try {
+                const contactNumber = number.replace(/@c\.us$/, "");
+                await axios.post(`${API_BASE}/histories`, {
+                    contact_number: contactNumber,
+                    message: message,
+                    direction: "out",
+                    status: "failed",
+                });
+                console.log("⚠️ Pesan gagal disimpan ke histories dengan status failed");
+                saveLog("Failed message saved to histories");
+            } catch (saveErr) {
+                console.error("❌ Gagal simpan pesan gagal: ", saveErr.message);
+                saveLog(`Failed to save failed message: ${saveErr.message}`);
+            }
+
             if (attempt < retries) {
                 console.log("⏳ Coba lagi dalam 5 detik...");
-                saveLog(`Try again in 5 seconds.`);
+                saveLog("Try again in 5 seconds.");
                 await new Promise((resolve) => setTimeout(resolve, 5000));
             }
         }

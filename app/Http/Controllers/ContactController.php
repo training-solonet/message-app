@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use App\Models\Category;
+use App\Models\Schedule;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
@@ -62,13 +63,21 @@ class ContactController extends Controller
             'phone_number' => 'required|string',
         ]);
 
+        // Detect category change
+        $oldCategory = $contact->category_id;
+
         $contact->update([
             'contact_name' => $request->contact_name,
             'category_id' => $request->category_id,
             'phone_number' => $request->phone_number,
         ]);
 
-        return redirect()->back()->with('message', 'Contact updated!');
+        // If category changed, remove all existing schedule links
+        if ($oldCategory != $request->category_id) {
+            $contact->schedules()->detach();
+        }
+
+        return redirect()->back()->with('message', 'Contact updated and schedules cleared for new category!');
     }
 
     /**

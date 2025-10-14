@@ -35,6 +35,7 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/dashboard/{contact}', [DashboardController::class, 'update'])->name('dashboard.update');
 });
 
 Route::post('/logs', function (Request $request) {
