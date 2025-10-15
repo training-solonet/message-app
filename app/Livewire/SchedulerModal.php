@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use App\Models\Contact;
 use App\Models\Category;
 use App\Models\Schedule;
 use Livewire\Component;
@@ -26,7 +25,6 @@ class SchedulerModal extends Component
 
     public function mount()
     {
-        // Load all categories from the categories table
         $this->categories = Category::all();
     }
 
@@ -34,23 +32,15 @@ class SchedulerModal extends Component
     {
         $this->validate();
 
-        // Get all contacts belonging to the selected category_id
-        $contacts = Contact::where('category_id', $this->selectedCategory)->get();
-
-        if ($contacts->isEmpty()) {
-            $this->addError('selectedCategory', 'No contacts found in this category.');
-            return;
-        }
-
-        // Create a new schedule
+        // Buat schedule baru
         $schedule = Schedule::create([
             'scheduler_name' => $this->scheduler_name,
             'message' => $this->message,
             'schedule_time' => $this->schedule_time,
         ]);
 
-        // Attach all contact IDs under that category
-        $schedule->contacts()->attach($contacts->pluck('id')->toArray());
+        // Hubungkan dengan category_id melalui pivot contact_schedules
+        $schedule->categories()->attach($this->selectedCategory);
 
         // Reset form
         $this->reset(['scheduler_name', 'message', 'schedule_time', 'selectedCategory', 'showModal']);

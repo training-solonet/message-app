@@ -11,4 +11,8 @@ class Category extends Model
     public function contacts(){
         return $this->hasMany(Contact::class);
     }
+
+    public function schedules(){
+        return $this->belongsToMany(Schedule::class, 'contact_schedule', 'category_id', 'schedule_id');
+    }
 }

@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('contact_schedule', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('contact_id')->constrained()->onDelete('cascade');
+            $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->foreignId('schedule_id')->constrained()->onDelete('cascade');
             $table->timestamps();
 
-            $table->unique(['contact_id', 'schedule_id']);
+            $table->unique(['category_id', 'schedule_id']);
         });
     }
 

@@ -13,7 +13,7 @@ use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('bot.login');
 
 Route::get('/log', [LogController::class, 'index'])->middleware(['auth', 'verified'])->name('log');
 

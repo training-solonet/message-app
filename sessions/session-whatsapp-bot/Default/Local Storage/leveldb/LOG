@@ -1,0 +1,6 @@
+2025/10/15-14:39:19.853 4414 Reusing MANIFEST D:\laragon\www\message-app\sessions\session-whatsapp-bot\Default\Local Storage\leveldb/MANIFEST-000001
+2025/10/15-14:39:19.854 4414 Recovering log #7
+2025/10/15-14:39:19.857 4414 Reusing old log D:\laragon\www\message-app\sessions\session-whatsapp-bot\Default\Local Storage\leveldb/000007.log 
+2025/10/15-14:41:23.173 380c Level-0 table #11: started
+2025/10/15-14:41:23.180 380c Level-0 table #11: 18126 bytes OK
+2025/10/15-14:41:23.186 380c Delete type=0 #7

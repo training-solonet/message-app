@@ -25,7 +25,7 @@ class Schedule extends Model
         'schedule_time'
     ];
 
-    public function contacts(){
-        return $this->belongsToMany(Contact::class, 'contact_schedule');
+    public function categories(){
+        return $this->belongsToMany(Category::class, 'contact_schedule', 'schedule_id', 'category_id');
     }
 }

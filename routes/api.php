@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Log;
+use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HistoryController;
@@ -23,4 +24,10 @@ Route::post('/logs', function (Request $request) {
         'message' => $request->message,
     ]);
     return response()->json(['status' => 'ok']);
+});
+
+Route::post('/whatsapp/bot-status', [WhatsAppController::class, 'botStatus']);
+
+Route::get('/contacts/by-category/{id}', function ($id) {
+    return Contact::where('category_id', $id)->get();
 });

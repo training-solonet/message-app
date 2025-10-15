@@ -42,4 +42,19 @@ class WhatsAppController extends Controller
         return response()->json(['status' => 'success', 'number' => $number, 'name' => $name]);
     }
 
+    public function botStatus(Request $request)
+    {
+        $request->validate([
+            'status' => 'required|in:connected,disconnected',
+        ]);
+
+        // Example: store in cache or database
+        // Using cache for simplicity
+        cache(['whatsapp_bot_status' => $request->status], now()->addHours(1));
+
+        return response()->json([
+            'success' => true,
+            'message' => "Bot status updated to {$request->status}"
+        ]);
+    }
 }

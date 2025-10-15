@@ -166,6 +166,90 @@
         const contacts = @json($contacts);
         let currentContactId = null;
 
+        // Function to format message with 30 characters per row
+        function formatMessage(message) {
+            if (!message) return '';
+            
+            const words = message.split(' ');
+            let currentLine = '';
+            let formattedMessage = '';
+            const maxChars = 30;
+            
+            words.forEach(word => {
+                // If adding the next word would exceed the limit, start a new line
+                if ((currentLine + word).length > maxChars) {
+                    if (currentLine) {
+                        formattedMessage += currentLine.trim() + '\n';
+                    }
+                    currentLine = word + ' ';
+                } else {
+                    currentLine += word + ' ';
+                }
+            });
+            
+            // Add the last line
+            if (currentLine) {
+                formattedMessage += currentLine.trim();
+            }
+            
+            return formattedMessage;
+        }
+
+        // Function to format date for display
+        function formatDateDisplay(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            // Check if date is today
+            if (date.toDateString() === today.toDateString()) {
+                return 'Today';
+            }
+            // Check if date is yesterday
+            else if (date.toDateString() === yesterday.toDateString()) {
+                return 'Yesterday';
+            }
+            // Otherwise return formatted date
+            else {
+                return date.toLocaleDateString('en-GB', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                });
+            }
+        }
+
+        // Function to get date string in YYYY-MM-DD format for comparison
+        function getDateString(dateString) {
+            const date = new Date(dateString);
+            return date.toISOString().split('T')[0];
+        }
+
+        // Function to get message status text and color based on both status and direction
+        function getMessageStatus(status, direction) {
+            switch(status) {
+                case 'sent':
+                    if (direction === 'in') {
+                        return { text: 'Sent', color: 'text-green-600' };
+                    } else {
+                        return { text: 'Sent', color: 'text-green-400' };
+                    }
+                case 'failed':
+                    if (direction === 'in') {
+                        return { text: 'Failed', color: 'text-red-600' };
+                    } else {
+                        return { text: 'Failed', color: 'text-red-400' };
+                    }
+                default:
+                    if (direction === 'in') {
+                        return { text: 'Sent', color: 'text-green-600' };
+                    } else {
+                        return { text: 'Sent', color: 'text-green-400' };
+                    }
+            }
+        }
+
         function showChat(contactId) {
             currentContactId = contactId;
             const chatBox = document.getElementById('chat-messages');
@@ -184,17 +268,68 @@
             contactName.textContent = contact.contact_name;
 
             if (contact.histories && contact.histories.length > 0) {
+                let chatDate = null;
+                
                 contact.histories.forEach(msg => {
+                    const messageDate = getDateString(msg.created_at);
+                    
+                    // Check if we need to add a date header
+                    if (chatDate !== messageDate) {
+                        chatDate = messageDate;
+                        
+                        // Create date header
+                        const dateDiv = document.createElement('div');
+                        dateDiv.className = 'flex justify-center my-6';
+                        dateDiv.innerHTML = `
+                            <div class="bg-gray-200 px-4 py-2 rounded-full text-sm text-gray-600 font-medium">
+                                ${formatDateDisplay(msg.created_at)}
+                            </div>
+                        `;
+                        chatBox.appendChild(dateDiv);
+                    }
+
+                    // Create message bubble
                     const div = document.createElement('div');
-                    div.className = `flex ${msg.direction === 'out' ? 'justify-end' : 'justify-start'}`;
+                    div.className = `flex ${msg.direction === 'out' ? 'justify-end' : 'justify-start'} mb-4`;
+
+                    // Format time (hour:minute)
+                    const sentTime = msg.created_at
+                        ? new Date(msg.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+                        : '';
+
+                    // Format message with 30 characters per row
+                    const formattedMessage = formatMessage(msg.message);
+                    
+                    // Get message status with direction consideration
+                    const status = getMessageStatus(msg.status, msg.direction);
+                    
+                    // Create message bubble with time and status inside
                     div.innerHTML = `
-                        <div class="max-w-[70%] px-4 py-2 rounded-2xl shadow-sm ${
-                            msg.direction === 'out'
-                                ? 'bg-indigo-500 text-white'
-                                : 'bg-gray-300 text-gray-900'
-                        }">${msg.message}</div>`;
+                        <div class="flex flex-col max-w-[70%] ${
+                            msg.direction === 'out' ? 'items-end' : 'items-start'
+                        }">
+                            <div class="relative px-4 py-2 rounded-2xl shadow-sm break-words max-w-full ${
+                                msg.direction === 'out'
+                                    ? 'bg-indigo-500 text-white'
+                                    : 'bg-gray-300 text-gray-900'
+                            }">
+                                <div class="message-content whitespace-pre-wrap">${formattedMessage}</div>
+                                <div class="flex justify-end items-center mt-1 space-x-1">
+                                    <span class="text-xs ${
+                                        msg.direction === 'out' ? 'text-indigo-100' : 'text-gray-600'
+                                    }">${sentTime}</span>
+                                    <span class="text-xs">|</span>
+                                    <span class="text-xs ${status.color}">${status.text}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
                     chatBox.appendChild(div);
                 });
+                
+                // Scroll to bottom of chat
+                chatBox.scrollTop = chatBox.scrollHeight;
             } else {
                 chatBox.innerHTML = '<p class="text-gray-500 text-center mt-10">No messages yet</p>';
             }
@@ -246,4 +381,14 @@
             });
         }
     </script>
+    
+    <style>
+        /* Additional CSS for better message display */
+        .message-content {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+            line-height: 1.4;
+        }
+    </style>
 </x-app-layout>

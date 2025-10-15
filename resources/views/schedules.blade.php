@@ -98,7 +98,7 @@
                                                             <option value="">-- Select a Category --</option>
                                                             @foreach($categories as $category)
                                                                 <option value="{{ $category->id }}" 
-                                                                    {{ $schedule->contacts->first()?->category_id == $category->id ? 'selected' : '' }}>
+                                                                    {{ $schedule->categories->contains('id', $category->id) ? 'selected' : '' }}>
                                                                     {{ $category->category_name }}
                                                                 </option>
                                                             @endforeach

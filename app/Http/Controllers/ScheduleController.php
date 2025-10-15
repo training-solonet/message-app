@@ -14,7 +14,7 @@ class ScheduleController extends Controller
      */
     public function index()
     {
-        $schedules = Schedule::with('contacts')->get();
+        $schedules = Schedule::with('categories')->get();
         $contacts = Contact::all();
         $categories = Category::all(); // Fetch all categories
 
@@ -26,7 +26,7 @@ class ScheduleController extends Controller
      */
     public function showSchedules()
     {
-        $schedules = Schedule::with('contacts')->get();
+        $schedules = Schedule::with('categories')->get();
         return response()->json($schedules);
     }
 
@@ -44,19 +44,15 @@ class ScheduleController extends Controller
             'selectedCategory' => 'required|exists:categories,id',
         ]);
 
-        // Update schedule
+        // Update schedule data
         $schedule->update([
             'scheduler_name' => $validated['scheduler_name'],
             'message' => $validated['message'],
             'schedule_time' => $validated['schedule_time'],
         ]);
 
-        // Sync contacts by category_id
-        $contactIds = Contact::where('category_id', $validated['selectedCategory'])
-            ->pluck('id')
-            ->toArray();
-
-        $schedule->contacts()->sync($contactIds);
+        // Sync dengan kategori baru (pivot contact_schedules)
+        $schedule->categories()->sync([$validated['selectedCategory']]);
 
         return redirect()
             ->route('schedules.index')
@@ -69,7 +65,7 @@ class ScheduleController extends Controller
     public function destroy(string $id)
     {
         $schedule = Schedule::findOrFail($id);
-        $schedule->contacts()->detach();
+        $schedule->categories()->detach();
         $schedule->delete();
 
         return redirect()

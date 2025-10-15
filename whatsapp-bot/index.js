@@ -2,11 +2,10 @@ const { Client, LocalAuth } = require("whatsapp-web.js");
 const QRCode = require("qrcode");
 const schedule = require("node-schedule");
 const fs = require("fs");
-const path = require("path");
 const axios = require("axios");
 
 // ==================== CONFIG ====================
-const API_BASE = "http://message-app.test/api"; // ganti dengan URL Laravel kamu
+const API_BASE = "http://message-app.test/api"; // Ganti dengan URL Laravel kamu
 const BOT_ID = "whatsapp-bot"; // ID unik client
 const sessionsDir = "./sessions";
 
@@ -15,6 +14,7 @@ let isConnected = false;
 let reconnecting = false;
 const MAX_RECONNECT_ATTEMPTS = 10;
 let reconnectAttempts = 0;
+let bot_status = "disconnected"; // connected / disconnected
 
 // Pastikan folder sessions ada
 if (!fs.existsSync(sessionsDir)) {
@@ -42,23 +42,19 @@ const client = new Client({
 
 // ==================== EVENT HANDLER ====================
 
-// QR untuk login
 client.on("qr", async (qr) => {
     console.log("📱 QR diterima, mengirim ke Laravel...");
     saveLog("QR received, sending to Laravel.");
 
-    // Convert ke base64 PNG
     const qrImage = await QRCode.toDataURL(qr);
 
-    // Kirim ke Laravel
     try {
         await axios.post(`${API_BASE}/whatsapp/qr`, { qr: qrImage });
         console.log("✅ QR terkirim ke Laravel");
         saveLog("QR sent to Laravel.");
     } catch (err) {
-        let error = err.message;
         console.error("❌ Gagal kirim QR:", err.message);
-        saveLog(`Failed to send QR: ${error}`);
+        saveLog(`Failed to send QR: ${err.message}`);
     }
 });
 
@@ -75,18 +71,18 @@ client.on("auth_failure", (msg) => {
 
 client.on("ready", async () => {
     console.log("✅ WhatsApp Bot siap!");
+    bot_status = "connected";
+    await sendBotStatus();
     saveLog("WhatsApp Bot is ready.");
     isConnected = true;
 
-    // Ambil nomor bot
     const botNumber = client.info.wid.user + "@c.us";
     console.log("🤖 Nomor bot:", botNumber);
-    saveLog(`Bot number: ${botNumber}`)
+    saveLog(`Bot number: ${botNumber}`);
 
-    // Kirim ke Laravel
     try {
         await axios.post(`${API_BASE}/whatsapp/bot-info`, {
-            number: client.info.wid.user, // nomor tanpa @c.us
+            number: client.info.wid.user,
             name: client.info.pushname || "Unknown",
         });
         console.log("✅ Info bot terkirim ke Laravel");
@@ -96,7 +92,6 @@ client.on("ready", async () => {
         saveLog(`Failed to send bot info`);
     }
 
-    // Hapus QR dari Laravel kalau sudah login
     try {
         await axios.post(`${API_BASE}/whatsapp/qr`, { qr: null });
         console.log("🧹 QR dihapus karena sudah login");
@@ -110,18 +105,17 @@ client.on("ready", async () => {
     await loadSchedules();
 });
 
-
 client.on("disconnected", async (reason) => {
     console.log("⚠️ Client terputus:", reason);
+    bot_status = "disconnected";
+    await sendBotStatus();
     saveLog(`Client disconnected: ${reason}`);
     isConnected = false;
 
     if (!reconnecting && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         reconnecting = true;
         reconnectAttempts++;
-        console.log(
-            `🔄 Reconnect dalam 10 detik... (Percobaan ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`
-        );
+        console.log(`🔄 Reconnect dalam 10 detik... (Percobaan ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
         saveLog(`Reconnect in 10 seconds... (Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
 
         try {
@@ -149,16 +143,17 @@ client.on("message", async (msg) => {
     saveLog(`Incoming message from ${msg.from}: ${msg.body}`);
 
     const phoneNumber = msg.from.replace(/@c\.us$/, "");
-    
-    try{
+
+    try {
         await axios.post(`${API_BASE}/histories`, {
             contact_number: phoneNumber,
             message: msg.body,
             direction: "in",
+            status: "sent",
         });
         console.log("✅ Pesan masuk disimpan ke histories");
         saveLog("Incoming message saved to histories.");
-    } catch (err){
+    } catch (err) {
         console.error("❌ Gagal simpan pesan masuk: ", err.message);
         saveLog(`Failed to save incoming message: ${err.message}`);
     }
@@ -166,15 +161,13 @@ client.on("message", async (msg) => {
 
 // ==================== FUNCTIONS ====================
 
-// Keep alive
 function keepSessionAlive() {
     setInterval(async () => {
         if (isConnected) {
             try {
-                let time = new Date().toLocaleTimeString();
                 await client.sendPresenceAvailable();
                 console.log("🔄 Keep-alive ping sent -", new Date().toLocaleTimeString());
-                saveLog(`Keep-alive ping sent -${time}`);
+                saveLog(`Keep-alive ping sent -${new Date().toLocaleTimeString()}`);
             } catch (error) {
                 console.log("❌ Keep-alive failed:", error.message);
                 saveLog(`Keep-alive failed: ${error.message}`);
@@ -183,7 +176,6 @@ function keepSessionAlive() {
     }, 60000);
 }
 
-// Cek koneksi
 function checkConnection() {
     if (!isConnected) {
         console.log("⚠️ Bot tidak terhubung, menunggu reconnect...");
@@ -193,14 +185,12 @@ function checkConnection() {
     return true;
 }
 
-// Kirim pesan dengan retry
 async function safeSend(number, message, retries = 3) {
     for (let attempt = 1; attempt <= retries; attempt++) {
         if (!checkConnection()) {
             console.log(`❌ Percobaan ${attempt} gagal - Client tidak terhubung`);
             saveLog(`Attempt ${attempt} failed - Client not connected`);
-            if (attempt < retries)
-                await new Promise((resolve) => setTimeout(resolve, 10000));
+            if (attempt < retries) await new Promise((r) => setTimeout(r, 10000));
             continue;
         }
 
@@ -230,7 +220,6 @@ async function safeSend(number, message, retries = 3) {
             console.error(`❌ Percobaan ${attempt} gagal:`, err.message);
             saveLog(`Attempt ${attempt} failed: ${err.message}`);
 
-            // 🧩 Add this block to save the failed message in histories
             try {
                 const contactNumber = number.replace(/@c\.us$/, "");
                 await axios.post(`${API_BASE}/histories`, {
@@ -256,17 +245,26 @@ async function safeSend(number, message, retries = 3) {
     return false;
 }
 
+async function sendBotStatus() {
+    try {
+        await axios.post(`${API_BASE}/whatsapp/bot-status`, { status: bot_status });
+        console.log(`🔔 Bot status sent: ${bot_status}`);
+        saveLog(`Bot status sent: ${bot_status}`);
+    } catch (err) {
+        console.error("❌ Gagal kirim bot_status:", err.message);
+        saveLog(`Failed to send bot_status: ${err.message}`);
+    }
+}
+
 async function saveLog(message) {
     try {
         await axios.post(`${API_BASE}/logs`, { message });
     } catch (err) {
         console.error("❌ Gagal simpan log:", err.message);
-        saveLog(`Failed to save log: ${err.message}`);
     }
 }
 
-// Ambil jadwal dari Laravel
-// Ambil jadwal dari Laravel
+// ==================== PERUBAHAN DI SINI ====================
 async function loadSchedules() {
     console.log("📡 Memuat jadwal dari Laravel...");
     saveLog(`Loading schedules from Laravel.`);
@@ -276,125 +274,55 @@ async function loadSchedules() {
         const schedules = res.data;
 
         schedules.forEach((item) => {
-            console.log(
-                `📌 Jadwal: ${item.scheduler_name} @ ${item.schedule_time} untuk ${item.contacts.length} kontak`
-            );
-            saveLog(`Schedule: ${item.scheduler_name} @ ${item.schedule_time} for ${item.contacts.length} contacts`);
+            console.log(`📌 Jadwal: ${item.scheduler_name} @ ${item.schedule_time}`);
+            saveLog(`Schedule: ${item.scheduler_name} @ ${item.schedule_time}`);
 
             const [hour, minute] = item.schedule_time.split(":");
             const rule = `${minute} ${hour} * * *`;
 
-            // Cancel job lama jika sudah ada
+            // Reset jika sudah ada job dengan nama sama
             if (schedule.scheduledJobs[item.scheduler_name]) {
                 schedule.scheduledJobs[item.scheduler_name].cancel();
                 console.log(`♻️ Job ${item.scheduler_name} direset`);
                 saveLog(`Job ${item.scheduler_name} reset`);
             }
 
-            // Daftarkan job baru dengan nama unik
             schedule.scheduleJob(item.scheduler_name, rule, async () => {
-                for (const contact of item.contacts) {
-                    let number = contact.phone_number + "@c.us";
-                    let success = await safeSend(number, item.message);
+                console.log(`🚀 Eksekusi schedule: ${item.scheduler_name}`);
+                saveLog(`Execute schedule: ${item.scheduler_name}`);
 
-                    if (success) {
-                        console.log(`✅ Message sent to ${contact.phone_number}`);
-                        saveLog(`✅ Message to ${contact.phone_number} sent successfully.`);
-                    } else {
-                        console.log(`❌ Failed to send to ${contact.phone_number}`);
-                        saveLog(`❌ Message to ${contact.phone_number} failed to send.`);
+                try {
+                    // Ambil kategori dari pivot contact_schedules (item.categories)
+                    const categories = item.categories || [];
+                    for (const category of categories) {
+                        const catId = category.id;
+
+                        // Ambil semua kontak dari kategori tersebut
+                        const contactsRes = await axios.get(`${API_BASE}/contacts/by-category/${catId}`);
+                        const contacts = contactsRes.data;
+
+                        for (const contact of contacts) {
+                            const number = contact.phone_number + "@c.us";
+                            const success = await safeSend(number, item.message);
+
+                            if (success) {
+                                console.log(`✅ Message sent to ${contact.phone_number}`);
+                                saveLog(`✅ Message to ${contact.phone_number} sent successfully.`);
+                            } else {
+                                console.log(`❌ Failed to send to ${contact.phone_number}`);
+                                saveLog(`❌ Message to ${contact.phone_number} failed to send.`);
+                            }
+                        }
                     }
+                } catch (err) {
+                    console.error("❌ Error menjalankan schedule:", err.message);
+                    saveLog(`Error executing schedule: ${err.message}`);
                 }
             });
         });
     } catch (err) {
         console.error("❌ Gagal load schedules:", err.message);
         saveLog(`Failed to load schedules: ${err.message}`);
-    }
-}
-
-// Shutdown Chromium clean
-async function shutdownChromium() {
-    console.log("🛑 Mematikan Chromium...");
-    saveLog(`Turning off Chromium.`);
-    try {
-        await client.destroy();
-        console.log("✅ Chromium berhasil dimatikan");
-        saveLog(`Chromium successfully turned off.`);
-    } catch (error) {
-        console.error("❌ Error shutdown:", error.message);
-        saveLog(`Error shutdown: ${error.message}`);
-        process.exit(1);
-    }
-}
-
-// Handle signal shutdown
-["SIGINT", "SIGTERM", "SIGQUIT", "SIGHUP"].forEach((signal) => {
-    process.on(signal, async () => {
-        console.log(`\n${signal} diterima, menghentikan bot...`);
-        saveLog(`${signal} received, turning off the bot.`);
-        try {
-            await shutdownChromium();
-            console.log("✅ Bot dihentikan clean");
-            saveLog(`Bot stopped clean.`);
-            process.exit(0);
-        } catch (error) {
-            console.error("❌ Gagal shutdown:", error);
-            saveLog(`Failed to shutdown: ${error}`);
-            process.exit(1);
-        }
-    });
-});
-
-// Exception handler
-process.on("uncaughtException", async (error) => {
-    console.error("❌ Uncaught Exception:", error);
-    saveLog(`Uncaught Exception: ${error}`);
-    try {
-        await shutdownChromium();
-    } finally {
-        process.exit(1);
-    }
-});
-
-process.on("unhandledRejection", async (reason, promise) => {
-    console.error("❌ Unhandled Rejection:", reason);
-    saveLog(`Unhandled Rejection: ${reason}`);
-    try {
-        await shutdownChromium();
-    } finally {
-        process.exit(1);
-    }
-});
-
-// Watch sessions folder
-fs.watch('.', (eventType, filename) => {
-    if (filename === "sessions" && eventType === "rename") {
-        // kalau sessions dihapus, langsung reset client
-        if (!fs.existsSync(sessionsDir)) {
-            console.log("⚠️ Sessions folder deleted! Forcing re-login...");
-            saveLog("Sessions folder deleted, forcing QR regeneration...");
-
-            forceRelogin();
-        }
-    }
-});
-
-async function forceRelogin() {
-    try {
-        await client.destroy();
-        console.log("🧹 Old client destroyed");
-
-        // Buat ulang folder sessions
-        fs.mkdirSync(sessionsDir, { recursive: true });
-
-        // Inisialisasi ulang client
-        client.initialize();
-        console.log("🔄 Client re-initialized, waiting for QR...");
-        saveLog("Client re-initialized, waiting for QR...");
-    } catch (error) {
-        console.error("❌ Error during forceRelogin:", error.message);
-        saveLog(`Error during forceRelogin: ${error.message}`);
     }
 }
 
@@ -405,11 +333,10 @@ client.initialize().catch(async (error) => {
     process.exit(1);
 });
 
-process.on("exit", (code) => {
-    console.log(`Process exiting with code: ${code}`);
-    saveLog(`Process exiting with code: ${code}`);
-});
-
 setInterval(() => {
     loadSchedules();
 }, 60000);
+
+setInterval(() => {
+    sendBotStatus();
+}, 30000);
