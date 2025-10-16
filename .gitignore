@@ -20,6 +20,7 @@
 /storage/pail
 /vendor
 /whatsapp-bot/node_modules
+/sessions
 Homestead.json
 Homestead.yaml
 Thumbs.db
