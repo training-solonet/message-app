@@ -1,17 +1,17 @@
 <x-app-layout>
-    <div class="h-screen flex flex-col">
+    <div class="h-screen flex flex-col overflow-hidden">
         <!-- Header aplikasi (jika ada) -->
         
-        <div class="flex-1 flex overflow-hidden">
+        <div class="flex-1 flex min-h-0">
             {{-- Sidebar Contacts --}}
-            <div class="w-1/5 flex flex-col border-r border-gray-200 bg-gray-50 min-w-64 max-h-full">
+            <div class="w-1/5 flex flex-col border-r border-gray-200 bg-gray-50 min-w-64 min-h-0">
                 {{-- Header --}}
-                <div class="sticky top-0 z-20 bg-gray-200 p-4 border-b flex items-center justify-between h-[60px]">
+                <div class="sticky top-0 z-20 bg-gray-200 p-4 border-b flex items-center justify-between h-[60px] shrink-0">
                     <h3 class="font-semibold text-lg text-gray-800">Contacts</h3>
                 </div>
 
                 {{-- Search Bar --}}
-                <div class="sticky top-[60px] z-10 bg-gray-100 p-3 border-b">
+                <div class="sticky top-[60px] z-10 bg-gray-100 p-3 border-b shrink-0">
                     <div class="relative">
                         <input
                             type="text"
@@ -27,14 +27,14 @@
                 </div>
                 
                 {{-- Tabs Filter --}}
-                <div class="sticky top-[108px] z-10 bg-gray-100 border-b flex justify-around text-sm font-medium">
+                <div class="sticky top-[108px] z-10 bg-gray-100 border-b flex justify-around text-sm font-medium shrink-0">
                     <button id="tab-all" onclick="setActiveTab('all')" class="w-1/3 py-2 border-b-2 border-indigo-600 text-indigo-600 focus:outline-none transition">All</button>
                     <button id="tab-unread" onclick="setActiveTab('unread')" class="w-1/3 py-2 border-b-2 text-gray-600 hover:text-indigo-600 focus:outline-none transition">Unread</button>
                     <button id="tab-noted" onclick="setActiveTab('noted')" class="w-1/3 py-2 border-b-2 text-gray-600 hover:text-indigo-600 focus:outline-none transition">Noted</button>
                 </div>
 
                 {{-- Contact List --}}
-                <div class="flex-1 overflow-y-auto">
+                <div class="flex-1 overflow-y-auto min-h-0">
                     <ul id="contact-list" class="h-full">
                         @foreach($contacts as $contact)
                             @php
@@ -71,8 +71,8 @@
             </div>
 
             {{-- Chat Area --}}
-            <div class="flex-1 flex flex-col bg-gray-100 max-h-full">
-                <div class="sticky top-0 z-20 bg-gray-200 p-4 border-b flex items-center justify-between h-[60px]">
+            <div class="flex-1 flex flex-col bg-gray-100 min-h-0">
+                <div class="sticky top-0 z-20 bg-gray-200 p-4 border-b flex items-center justify-between h-[60px] shrink-0">
                     <h3 class="font-semibold text-lg text-gray-800 truncate" id="chat-contact-name">Select a contact</h3>
                     <button 
                         id="contact-info-btn" 
@@ -86,14 +86,14 @@
                     </button>
                 </div>
 
-                <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50">
+                <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50 min-h-0">
                     <p class="text-gray-500 text-center mt-10">Select a contact to view messages</p>
                 </div>
             </div>
 
             {{-- Contact Info Sidebar --}}
-            <div id="contact-info-sidebar" class="hidden w-1/3 lg:w-96 flex flex-col border-l border-gray-200 bg-white transform transition-transform duration-300 ease-in-out overflow-y-auto max-h-full">
-                <div class="sticky top-0 z-20 bg-gray-200 p-4 border-b flex items-center justify-between h-[60px]">
+            <div id="contact-info-sidebar" class="hidden w-1/3 lg:w-96 flex flex-col border-l border-gray-200 bg-white min-h-0">
+                <div class="sticky top-0 z-20 bg-gray-200 p-4 border-b flex items-center justify-between h-[60px] shrink-0">
                     <h3 class="font-semibold text-lg text-gray-800">Contact Info</h3>
                     <button 
                         onclick="toggleContactInfo()"
@@ -105,7 +105,7 @@
                     </button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto">
+                <div class="flex-1 overflow-y-auto min-h-0">
                     <div class="text-center py-8 border-b border-gray-200">
                         <div class="w-32 h-32 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <span class="text-4xl font-semibold text-indigo-600" id="contact-avatar"></span>
@@ -319,7 +319,7 @@
                     const status = getMessageStatus(msg.status, msg.direction);
                     
                     div.innerHTML = `
-                        <div class="flex ${msg.direction === 'out' ? 'justify-end' : 'justify-start'} items-start group mb-4 max-w-[70%]">
+                        <div data-id="${msg.id}" class="flex ${msg.direction === 'out' ? 'justify-end' : 'justify-start'} items-start group mb-4 max-w-[70%]">
                             
                             ${msg.direction === 'out' ? `
                             <!-- Tombol Note di kiri untuk pesan keluar -->
@@ -452,7 +452,7 @@
         function setActiveTab(tab) {
             activeTab = tab;
 
-            // Ubah tampilan tab aktif
+            // 🔹 Ubah tampilan tab aktif
             document.querySelectorAll('[id^="tab-"]').forEach(btn => {
                 btn.classList.remove('border-indigo-600', 'text-indigo-600');
                 btn.classList.add('text-gray-600');
@@ -462,13 +462,121 @@
             activeBtn.classList.add('border-indigo-600', 'text-indigo-600');
             activeBtn.classList.remove('text-gray-600');
 
-            filterContacts();
-            
-            // Jika sedang melihat chat, refresh tampilan pesan dengan filter baru
-            if (currentContactId) {
-                showChat(currentContactId);
+            const contactList = document.getElementById('contact-list');
+            contactList.innerHTML = ''; // kosongkan list
+
+            // 🔹 MODE: NOTED
+            if (tab === 'noted') {
+                let notedMessages = [];
+
+                contacts.forEach(contact => {
+                    contact.histories.forEach(msg => {
+                        if (msg.noted === 1) {
+                            notedMessages.push({
+                                contact_name: contact.contact_name,
+                                message: msg.message,
+                                created_at: msg.created_at,
+                                contact_id: contact.id,
+                                message_id: msg.id
+                            });
+                        }
+                    });
+                });
+
+                if (notedMessages.length === 0) {
+                    contactList.innerHTML = `<p class="text-gray-500 text-center mt-6">No noted messages</p>`;
+                    return;
+                }
+
+                notedMessages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                notedMessages.forEach(msg => {
+                    const li = document.createElement('li');
+                    li.className = 'relative p-4 hover:bg-indigo-50 transition cursor-pointer border-b duration-150 ease-in-out';
+                    li.onclick = () => {
+                        showChat(msg.contact_id); // buka chat dulu
+
+                        // ⏳ beri sedikit delay agar DOM pesan sudah muncul
+                        setTimeout(() => {
+                            const chatBox = document.getElementById('chat-messages');
+                            const allBubbles = chatBox.querySelectorAll('.message-content');
+                            for (const bubble of allBubbles) {
+                                if (bubble.textContent.trim().includes(msg.message.trim().substring(0, 10))) {
+                                    bubble.parentElement.classList.add('ring-2', 'ring-indigo-400');
+                                    bubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    // hilangkan highlight setelah 1 detik
+                                    setTimeout(() => bubble.parentElement.classList.remove('ring-2', 'ring-indigo-400'), 1000);
+                                    break;
+                                }
+                            }
+                        }, 300);
+                    };
+
+                    li.innerHTML = `
+                        <div class="font-medium text-gray-800 flex justify-between items-center">
+                            <span>${msg.contact_name}</span>
+                            <span class="text-xs text-gray-500">${new Date(msg.created_at).toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                        <div class="text-sm text-gray-700 truncate">${msg.message}</div>
+                    `;
+                    contactList.appendChild(li);
+                });
+
+                return;
+            }
+
+
+            // 🔹 MODE: ALL & UNREAD (list kontak)
+            contacts.forEach(contact => {
+                const latest = contact.histories.length ? contact.histories[contact.histories.length - 1] : null;
+                const unreadCount = contact.histories.filter(h => h.direction === 'in' && !h.is_read).length;
+                const prefix = latest ? (latest.direction === 'out' ? 'You: ' : contact.contact_name + ': ') : '';
+                const msg = latest ? prefix + (latest.message.length > 20 ? latest.message.substring(0, 20) + '...' : latest.message) : 'No messages yet';
+
+                if (tab === 'unread' && unreadCount === 0) return;
+
+                const li = document.createElement('li');
+                li.className = 'relative p-4 hover:bg-indigo-50 transition cursor-pointer border-b duration-150 ease-in-out';
+                li.setAttribute('data-name', contact.contact_name.toLowerCase());
+                li.onclick = () => {
+                    // 🔸 Buka chat
+                    showChat(contact.id);
+
+                    // 🔸 Tandai semua pesan masuk sebagai sudah dibaca
+                    contact.histories.forEach(h => {
+                        if (h.direction === 'in') h.is_read = true;
+                    });
+
+                    // 🔸 Hapus tampilan bold & badge
+                    const messageEl = li.querySelector('.text-sm');
+                    if (messageEl) messageEl.classList.remove('font-semibold', 'text-gray-900');
+                    const badgeEl = li.querySelector('.bg-indigo-600');
+                    if (badgeEl) badgeEl.remove();
+
+                    // 🔸 Jika tab "Unread" aktif, hapus dari daftar
+                    if (activeTab === 'unread') {
+                        li.remove();
+                        if (contactList.children.length === 0) {
+                            contactList.innerHTML = `<p class="text-gray-500 text-center mt-6">No unread contacts</p>`;
+                        }
+                    }
+                };
+
+                li.innerHTML = `
+                    <div class="font-medium text-gray-800 flex justify-between items-center">
+                        <span>${contact.contact_name}</span>
+                        ${unreadCount > 0 ? `<span class="bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded-full">${unreadCount}</span>` : ''}
+                    </div>
+                    <div class="text-sm ${unreadCount > 0 ? 'font-semibold text-gray-900' : 'text-gray-500'}">${msg}</div>
+                `;
+                contactList.appendChild(li);
+            });
+
+            if (tab === 'unread' && contactList.children.length === 0) {
+                contactList.innerHTML = `<p class="text-gray-500 text-center mt-6">No unread contacts</p>`;
             }
         }
+
 
         function toggleNote(messageId, btn) {
             fetch(`/histories/${messageId}/toggle-note`, {
@@ -530,22 +638,19 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
         }
         
         /* Memastikan kontainer utama mengambil seluruh tinggi layar */
         .h-screen {
             height: 100vh;
         }
-        
-        /* Mengatur overflow untuk kontainer utama */
+/*         
         .overflow-hidden {
             overflow: hidden;
         }
         
-        /* Mengatur tinggi maksimum untuk semua panel */
         .max-h-full {
             max-height: 100%;
-        }
+        } */
     </style>
 </x-app-layout>
