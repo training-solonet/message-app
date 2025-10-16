@@ -7,6 +7,7 @@ use App\Http\Controllers\BotController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\ManageController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\DashboardController;
@@ -44,3 +45,6 @@ Route::post('/logs', function (Request $request) {
     ]);
     return response()->json(['status' => 'ok']);
 });
+
+Route::post('/chats/{contact_id}/read', [HistoryController::class, 'markAsRead'])->name('chats.markAsRead');
+Route::post('/histories/{history}/toggle-note', [HistoryController::class, 'toggleNote']);

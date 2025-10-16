@@ -34,6 +34,7 @@ class HistoryController extends Controller
             'message' => 'required|string',
             'direction' => 'required|in:in,out',
             'status' => 'required|in:sent,failed',
+            'is_read' => 'required',
         ]);
 
         $contact = Contact::where('phone_number', $request->contact_number)->first();
@@ -50,6 +51,7 @@ class HistoryController extends Controller
             'message' => $request->message,
             'direction' => $request->direction,
             'status' => $request->status,
+            'is_read' => $request->is_read,
         ]);
 
         return response()->json([
@@ -101,4 +103,27 @@ class HistoryController extends Controller
             'histories' => $contact->histories()->orderBy('created_at', 'asc')->get(),
         ]);
     }
+
+    public function markAsRead($id)
+    {
+        \App\Models\History::where('contact_id', $id)
+            ->where('direction', 'in')
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function toggleNote(History $history)
+    {
+        $history->update([
+            'noted' => !$history->noted
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'noted' => $history->noted
+        ]);
+    }
+
 }

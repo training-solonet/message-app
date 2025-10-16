@@ -150,6 +150,7 @@ client.on("message", async (msg) => {
             message: msg.body,
             direction: "in",
             status: "sent",
+            is_read: false,
         });
         console.log("✅ Pesan masuk disimpan ke histories");
         saveLog("Incoming message saved to histories.");
@@ -207,6 +208,7 @@ async function safeSend(number, message, retries = 3) {
                     message: message,
                     direction: "out",
                     status: "sent",
+                    is_read: true,
                 });
                 console.log("✅ Pesan keluar disimpan ke histories");
                 saveLog("Outgoing message saved to histories");
@@ -227,6 +229,7 @@ async function safeSend(number, message, retries = 3) {
                     message: message,
                     direction: "out",
                     status: "failed",
+                    is_read: true,
                 });
                 console.log("⚠️ Pesan gagal disimpan ke histories dengan status failed");
                 saveLog("Failed message saved to histories");

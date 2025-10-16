@@ -4,6 +4,7 @@ use App\Models\Log;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BotController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\WhatsAppController;
@@ -27,6 +28,7 @@ Route::post('/logs', function (Request $request) {
 });
 
 Route::post('/whatsapp/bot-status', [WhatsAppController::class, 'botStatus']);
+Route::post('/contacts/{id}/mark-read', [HistoryController::class, 'markAsRead']);
 
 Route::get('/contacts/by-category/{id}', function ($id) {
     return Contact::where('category_id', $id)->get();
