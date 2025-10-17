@@ -130,6 +130,17 @@
 
                             <div class="border-t border-gray-200"></div>
 
+                            <!-- WhatsApp Bot Logout -->
+                            <form method="POST" action="{{ route('whatsapp.logout') }}" x-data 
+                                  onsubmit="return confirm('Are you sure you want to logout from WhatsApp Bot? This will disconnect your WhatsApp session.')">
+                                @csrf
+                                <button type="submit" class="block w-full text-start px-4 py-2 text-sm leading-5 text-red-600 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
+                                    {{ __('Logout WhatsApp Bot') }}
+                                </button>
+                            </form>
+
+                            <div class="border-t border-gray-200"></div>
+
                             <!-- Authentication -->
                             <form method="POST" action="{{ route('logout') }}" x-data>
                                 @csrf
@@ -210,6 +221,15 @@
                         {{ __('API Tokens') }}
                     </x-responsive-nav-link>
                 @endif
+
+                <!-- WhatsApp Bot Logout (Mobile) -->
+                <form method="POST" action="{{ route('whatsapp.logout') }}" x-data
+                      onsubmit="return confirm('Are you sure you want to logout from WhatsApp Bot? This will disconnect your WhatsApp session.')">
+                    @csrf
+                    <button type="submit" class="block w-full text-start px-4 py-2 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-gray-100 focus:outline-none focus:text-red-800 focus:bg-gray-100 transition duration-150 ease-in-out">
+                        {{ __('Logout WhatsApp Bot') }}
+                    </button>
+                </form>
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}" x-data>

@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('scheduler_name');
             $table->text('message');
+            $table->string('file_path')->nullable();
             $table->time('schedule_time');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
     }

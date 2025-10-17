@@ -10,7 +10,7 @@ class History extends Model
     use HasFactory;
     
     protected $table = 'histories';
-    protected $fillable = [ 'contact_id', 'message', 'direction', 'status', 'is_read', 'noted' ];
+    protected $fillable = [ 'contact_id', 'message', 'direction', 'status', 'is_read', 'noted', 'file_path' ];
     
     /** * Relasi ke Contact */
     public function contact() { 

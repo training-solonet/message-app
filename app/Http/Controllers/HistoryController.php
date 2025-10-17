@@ -35,6 +35,7 @@ class HistoryController extends Controller
             'direction' => 'required|in:in,out',
             'status' => 'required|in:sent,failed',
             'is_read' => 'required',
+            'file_path' => 'nullable',
         ]);
 
         $contact = Contact::where('phone_number', $request->contact_number)->first();
@@ -52,6 +53,8 @@ class HistoryController extends Controller
             'direction' => $request->direction,
             'status' => $request->status,
             'is_read' => $request->is_read,
+            'noted' => false,
+            'file_path' => $request->file_path,
         ]);
 
         return response()->json([

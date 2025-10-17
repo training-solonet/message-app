@@ -19,8 +19,11 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No.</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Scheduler Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Category</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Message</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">File</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Send At</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
@@ -30,26 +33,53 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $i++ }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $schedule->scheduler_name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $schedule->categories->first()?->category_name ?? '-' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ \Illuminate\Support\Str::limit($schedule->message, 20) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if ($schedule->file_path)
+                                                @php
+                                                    $extension = strtoupper(pathinfo($schedule->file_path, PATHINFO_EXTENSION));
+                                                @endphp
+                                                <a href="{{ asset('storage/' . $schedule->file_path) }}" 
+                                                target="_blank" 
+                                                class="text-indigo-600 hover:underline">
+                                                    {{ $extension }} File
+                                                </a>
+                                            @else
+                                                <span class="text-gray-400">No file uploaded.</span>
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $schedule->schedule_time }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <button 
+                                                type="button"
+                                                class="px-3 py-1 text-sm rounded-full font-semibold transition-colors duration-200 
+                                                    {{ $schedule->status === 'active' 
+                                                        ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}"
+                                                onclick="toggleStatus({{ $schedule->id }}, this)"
+                                            >
+                                                {{ ucfirst($schedule->status) }}
+                                            </button>
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex space-x-2">
                                                 <button 
                                                     type="button"
                                                     onclick="document.getElementById('editModal_{{ $schedule->id }}').classList.remove('hidden')"
-                                                    class="inline-flex items-center px-3 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                                                    class="flex items-center justify-center w-12 h-10 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
                                                 >
-                                                    <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                                    <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
-
                                                 <form action="{{ route('schedules.destroy', $schedule) }}" method="POST" class="inline">
-                                                    @csrf @method('DELETE')
+                                                    @csrf
+                                                    @method('DELETE')
                                                     <button 
                                                         type="submit" 
-                                                        class="inline-flex items-center px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                                        class="flex items-center justify-center w-12 h-10 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                                         onclick="return confirm('Are you sure you want to delete this schedule?')"
                                                     >
-                                                        <i class="fa-solid fa-trash mr-1"></i> Delete
+                                                        <i class="fa-solid fa-trash"></i>
                                                     </button>
                                                 </form>
                                             </div>
@@ -62,8 +92,11 @@
                                             <div class="mt-3">
                                                 <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Schedule</h3>
 
-                                                <form id="editForm_{{ $schedule->id }}" method="POST" action="{{ route('schedules.update', $schedule->id) }}">
-                                                    @csrf @method('PUT')
+                                                <form id="editForm_{{ $schedule->id }}" method="POST" 
+                                                    action="{{ route('schedules.update', $schedule->id) }}" 
+                                                    enctype="multipart/form-data">
+                                                    @csrf 
+                                                    @method('PUT')
 
                                                     <div class="mt-4">
                                                         <x-label for="edit_scheduler_name_{{ $schedule->id }}" value="{{ __('Scheduler Name') }}" />
@@ -105,6 +138,28 @@
                                                         </select>
                                                     </div>
 
+                                                    <!-- Upload File -->
+                                                    <div class="mt-4">
+                                                        <x-label value="{{ __('Upload File (optional)') }}" />
+                                                        <input 
+                                                            type="file" 
+                                                            name="file" 
+                                                            class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                                        />
+
+                                                        @if ($schedule->file_path)
+                                                            <p class="text-sm text-gray-500 mt-1">
+                                                                Current file: 
+                                                                <a href="{{ asset('storage/' . $schedule->file_path) }}" 
+                                                                target="_blank" 
+                                                                class="text-blue-600 hover:underline">
+                                                                    {{ basename($schedule->file_path) }}
+                                                                </a>
+                                                            </p>
+                                                        @endif
+                                                    </div>
+
                                                     <div class="flex justify-end space-x-3 mt-6">
                                                         <x-secondary-button type="button" onclick="document.getElementById('editModal_{{ $schedule->id }}').classList.add('hidden')">
                                                             {{ __('Cancel') }}
@@ -118,6 +173,7 @@
                                             </div>
                                         </div>
                                     </div>
+
 
                                 @empty
                                     
@@ -145,7 +201,7 @@
             }
 
             $('#schedulesTable').DataTable({
-                "order": [[0, "desc"]],
+                "order": [[0, "asc"]],
                 "pagingType": "numbers",
                 "language": {
                     "emptyTable": "No schedules found.",
@@ -163,6 +219,39 @@
                 "responsive": true,
                 "autoWidth": false
             });
+        });
+
+        function toggleStatus(id, element) {
+            $.ajax({
+                url: `/schedules/${id}/toggle-status`,
+                type: 'PATCH',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Ubah teks dan warna button sesuai status baru
+                        if (response.new_status === 'active') {
+                            $(element)
+                                .text('Active')
+                                .removeClass('bg-gray-200 text-gray-700 hover:bg-gray-300')
+                                .addClass('bg-green-100 text-green-700 hover:bg-green-200');
+                        } else {
+                            $(element)
+                                .text('Inactive')
+                                .removeClass('bg-green-100 text-green-700 hover:bg-green-200')
+                                .addClass('bg-gray-200 text-gray-700 hover:bg-gray-300');
+                        }
+                    }
+                },
+                error: function() {
+                    alert('Failed to update status. Please try again.');
+                }
+            });
+        }
+
+        Livewire.on('schedulerAdded', () => {
+            window.location.href = "{{ route('schedules.index') }}";
         });
     </script>
 

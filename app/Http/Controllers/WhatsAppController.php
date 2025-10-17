@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bot;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
 class WhatsAppController extends Controller
@@ -44,17 +45,18 @@ class WhatsAppController extends Controller
 
     public function botStatus(Request $request)
     {
-        $request->validate([
-            'status' => 'required|in:connected,disconnected',
-        ]);
+        $status = $request->input('status', 'disconnected');
 
-        // Example: store in cache or database
-        // Using cache for simplicity
-        cache(['whatsapp_bot_status' => $request->status], now()->addHours(1));
+        DB::table('bot_statuses')->updateOrInsert(
+            ['id' => 1],
+            ['status' => $status, 'updated_at' => now()]
+        );
+
+        Cache::forever('bot_status', $status); // tetap cache untuk akses cepat
 
         return response()->json([
             'success' => true,
-            'message' => "Bot status updated to {$request->status}"
+            'status' => $status,
         ]);
     }
 }

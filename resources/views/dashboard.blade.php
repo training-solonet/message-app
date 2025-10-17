@@ -227,6 +227,27 @@
             }
         }
 
+        function getFileTypeIcon(filePath) {
+            const extension = filePath.split('.').pop().toLowerCase();
+            const iconClasses = "w-4 h-4 mr-1";
+            
+            if (['pdf'].includes(extension)) {
+                return `<svg class="${iconClasses} text-red-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V7.414A2 2 0 0016.414 6L14 3.586A2 2 0 0012.586 3H9z"/></svg>`;
+            } else if (['doc', 'docx'].includes(extension)) {
+                return `<svg class="${iconClasses} text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V7.414A2 2 0 0016.414 6L14 3.586A2 2 0 0012.586 3H9z"/></svg>`;
+            } else if (['xls', 'xlsx'].includes(extension)) {
+                return `<svg class="${iconClasses} text-green-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V7.414A2 2 0 0016.414 6L14 3.586A2 2 0 0012.586 3H9z"/></svg>`;
+            } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(extension)) {
+                return `<svg class="${iconClasses} text-purple-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>`;
+            } else {
+                return `<svg class="${iconClasses} text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>`;
+            }
+        }
+
+        function getFileName(filePath) {
+            return filePath.split('/').pop();
+        }
+
         // 🚀 Tambahan fungsi untuk mark as read
         function markMessagesAsRead(contactId) {
             fetch(`/chats/${contactId}/read`, {
@@ -318,6 +339,19 @@
                     const formattedMessage = formatMessage(msg.message);
                     const status = getMessageStatus(msg.status, msg.direction);
                     
+                    // File section jika file_path ada
+                    let fileSection = '';
+                    if (msg.file_path) {
+                        fileSection = `
+                            <div class="mb-2">
+                                <a href="/storage/${msg.file_path}" target="_blank" class="inline-flex items-center px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition duration-150 ease-in-out">
+                                    ${getFileTypeIcon(msg.file_path)}
+                                    <span class="text-sm text-blue-700 font-medium">${getFileName(msg.file_path)}</span>
+                                </a>
+                            </div>
+                        `;
+                    }
+                    
                     div.innerHTML = `
                         <div data-id="${msg.id}" class="flex ${msg.direction === 'out' ? 'justify-end' : 'justify-start'} items-start group mb-4 max-w-[70%]">
                             
@@ -338,6 +372,7 @@
                             <div class="relative px-4 py-2 rounded-2xl shadow-sm break-words ${
                                 msg.direction === 'out' ? 'bg-indigo-500 text-white' : 'bg-gray-300 text-gray-900'
                             }">
+                                ${fileSection}
                                 <div class="message-content whitespace-pre-wrap">${formattedMessage}</div>
 
                                 <!-- Timestamp + Status -->
@@ -477,7 +512,8 @@
                                 message: msg.message,
                                 created_at: msg.created_at,
                                 contact_id: contact.id,
-                                message_id: msg.id
+                                message_id: msg.id,
+                                file_path: msg.file_path // tambahkan file_path
                             });
                         }
                     });
@@ -512,12 +548,20 @@
                         }, 300);
                     };
 
+                    // Tambahkan indikator file jika ada
+                    const fileIndicator = msg.file_path ? 
+                        `<div class="inline-flex items-center text-xs text-blue-600 mt-1">
+                            ${getFileTypeIcon(msg.file_path)}
+                            <span>File attached</span>
+                        </div>` : '';
+
                     li.innerHTML = `
                         <div class="font-medium text-gray-800 flex justify-between items-center">
                             <span>${msg.contact_name}</span>
                             <span class="text-xs text-gray-500">${new Date(msg.created_at).toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
                         <div class="text-sm text-gray-700 truncate">${msg.message}</div>
+                        ${fileIndicator}
                     `;
                     contactList.appendChild(li);
                 });
@@ -644,13 +688,5 @@
         .h-screen {
             height: 100vh;
         }
-/*         
-        .overflow-hidden {
-            overflow: hidden;
-        }
-        
-        .max-h-full {
-            max-height: 100%;
-        } */
     </style>
 </x-app-layout>

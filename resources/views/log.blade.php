@@ -19,9 +19,9 @@
                         <table id="logsTable" class="min-w-full border border-gray-200 rounded-lg text-sm text-gray-800">
                             <thead class="bg-gray-800 text-white text-center">
                                 <tr>
-                                    <th class="py-3 px-4 border-b border-gray-300">No.</th>
-                                    <th class="py-3 px-4 border-b border-gray-300">Message</th>
-                                    <th class="py-3 px-4 border-b border-gray-300">Time</th>
+                                    <th class="py-3 px-4 border-b border-gray-300 w-16">No.</th>
+                                    <th class="py-3 px-4 border-b border-gray-300 w-2/3">Message</th>
+                                    <th class="py-3 px-4 border-b border-gray-300 w-1/3">Time</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -29,15 +29,14 @@
                                 @forelse ($logs as $log)
                                     <tr class="hover:bg-gray-100 transition">
                                         <td class="py-2 px-4 border-b border-gray-200 text-center">{{ $i++ }}</td>
-                                        <td class="py-2 px-4 border-b border-gray-200">{{ $log->message }}</td>
-                                        <td class="py-2 px-4 border-b border-gray-200 text-center">{{ $log->created_at }}</td>
+                                        <td class="py-2 px-4 border-b border-gray-200 truncate max-w-xs">{{ $log->message }}</td>
+                                        <td class="py-2 px-4 border-b border-gray-200 text-center whitespace-nowrap">{{ $log->created_at }}</td>
                                     </tr>
                                 @empty
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
-
                 </div>
             </div>
         </div>

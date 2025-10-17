@@ -19,6 +19,9 @@
         "vite": "^7.0.4"
     },
     "dependencies": {
+        "dotenv": "^17.2.3",
+        "express": "^5.1.0",
+        "mime-types": "^3.0.1",
         "qrcode": "^1.5.4"
     }
 }

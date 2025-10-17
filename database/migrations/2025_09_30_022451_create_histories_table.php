@@ -15,8 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('contact_id');
             $table->text('message');
+            $table->string('file_path')->nullable();
             $table->enum('direction', ['in', 'out']);
             $table->enum('status', ['sent', 'failed']);
+            $table->boolean('is_read')->default(false);
+            $table->boolean('noted')->default(false);
             $table->timestamps();
 
             $table->foreign('contact_id')->references('id')->on('contacts')->onDelete('cascade');

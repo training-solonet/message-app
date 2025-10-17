@@ -22,7 +22,9 @@ class Schedule extends Model
     protected $fillable = [
         'scheduler_name',
         'message',
-        'schedule_time'
+        'schedule_time',
+        'file_path',
+        'status',
     ];
 
     public function categories(){

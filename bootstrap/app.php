@@ -13,7 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'botstatus' => \App\Http\Middleware\CheckBotStatus::class,
+            'check.bot' => \App\Http\Middleware\CheckBotStatus::class,
+            'logged.in' => \App\Http\Middleware\RedirectIfLoggedIn::class,
+            'bot.reversal' => \App\Http\Middleware\BotStatusReversal::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
