@@ -1,3 +1,2 @@
-2025/10/17-16:03:24.288 1df0 Reusing MANIFEST D:\laragon\www\message-app\sessions\session-whatsapp-bot\Default\Local Storage\leveldb/MANIFEST-000001
-2025/10/17-16:03:24.289 1df0 Recovering log #3
-2025/10/17-16:03:24.289 1df0 Reusing old log D:\laragon\www\message-app\sessions\session-whatsapp-bot\Default\Local Storage\leveldb/000003.log 
+2025/10/18-09:34:06.625 1690 Creating DB D:\laragon\www\message-app\sessions\session-whatsapp-bot\Default\Local Storage\leveldb since it was missing.
+2025/10/18-09:34:06.770 1690 Reusing MANIFEST D:\laragon\www\message-app\sessions\session-whatsapp-bot\Default\Local Storage\leveldb/MANIFEST-000001

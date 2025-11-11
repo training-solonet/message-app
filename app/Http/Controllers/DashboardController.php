@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Contact;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -20,8 +21,9 @@ class DashboardController extends Controller
             ->get();
         
         $categories = Category::all();
+        $botStatus = DB::table('bot_statuses')->value('status');
 
-        return view('dashboard', compact('contacts','categories'));
+        return view('dashboard', compact('contacts','categories','botStatus'));
     }
 
     /**

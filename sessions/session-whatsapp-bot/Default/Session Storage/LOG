@@ -1,3 +1,2 @@
-2025/10/17-16:03:27.672 3944 Reusing MANIFEST D:\laragon\www\message-app\sessions\session-whatsapp-bot\Default\Session Storage/MANIFEST-000001
-2025/10/17-16:03:27.673 3944 Recovering log #3
-2025/10/17-16:03:27.673 3944 Reusing old log D:\laragon\www\message-app\sessions\session-whatsapp-bot\Default\Session Storage/000003.log 
+2025/10/18-09:34:11.985 1690 Creating DB D:\laragon\www\message-app\sessions\session-whatsapp-bot\Default\Session Storage since it was missing.
+2025/10/18-09:34:12.021 1690 Reusing MANIFEST D:\laragon\www\message-app\sessions\session-whatsapp-bot\Default\Session Storage/MANIFEST-000001

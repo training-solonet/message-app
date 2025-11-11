@@ -26,9 +26,9 @@ Route::get('/log', [LogController::class, 'index'])->middleware(['auth', 'verifi
 // Route::post('/manage/stop', [ManageController::class, 'stopBot'])->middleware(['auth', 'verified'])->name('bot.stop');
 // Route::get('/manage/status', [ManageController::class, 'status'])->middleware(['auth', 'verified'])->name('bot.status');
 
-Route::resource('schedules', ScheduleController::class)->middleware(['auth', 'verified', 'check.bot']);
-Route::resource('contacts', ContactController::class)->middleware(['auth', 'verified', 'check.bot']);
-Route::resource('categories', CategoryController::class)->middleware(['auth', 'verified', 'check.bot']);
+Route::resource('schedules', ScheduleController::class)->middleware(['auth', 'verified']);
+Route::resource('contacts', ContactController::class)->middleware(['auth', 'verified']);
+Route::resource('categories', CategoryController::class)->middleware(['auth', 'verified']);
 
 Route::post('/whatsapp/logout', [BotController::class, 'logoutBot'])->name('whatsapp.logout');
 
@@ -36,7 +36,6 @@ Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
-    'check.bot'
 ])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/dashboard/{contact}', [DashboardController::class, 'update'])->name('dashboard.update');

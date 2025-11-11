@@ -4,7 +4,7 @@
         
         <div class="flex-1 flex min-h-0">
             {{-- Sidebar Contacts --}}
-            <div class="w-1/5 flex flex-col border-r border-gray-200 bg-gray-50 min-w-64 min-h-0">
+            <div class="w-1/4 flex flex-col border-r border-gray-200 bg-gray-50 min-w-64 min-h-0">
                 {{-- Header --}}
                 <div class="sticky top-0 z-20 bg-gray-200 p-4 border-b flex items-center justify-between h-[60px] shrink-0">
                     <h3 class="font-semibold text-lg text-gray-800">Contacts</h3>
@@ -31,6 +31,10 @@
                     <button id="tab-all" onclick="setActiveTab('all')" class="w-1/3 py-2 border-b-2 border-indigo-600 text-indigo-600 focus:outline-none transition">All</button>
                     <button id="tab-unread" onclick="setActiveTab('unread')" class="w-1/3 py-2 border-b-2 text-gray-600 hover:text-indigo-600 focus:outline-none transition">Unread</button>
                     <button id="tab-noted" onclick="setActiveTab('noted')" class="w-1/3 py-2 border-b-2 text-gray-600 hover:text-indigo-600 focus:outline-none transition">Noted</button>
+                </div>
+
+                <div id="whatsapp-status-notice" class="hidden bg-red-100 border border-red-300 text-red-700 px-4 py-2 text-sm text-center font-medium">
+                    ⚠️ Anda belum login ke WhatsApp. Silahkan login nomor WhatsApp terlebih dahulu dengan <a href="{{ route("bot.login") }}" class="hover:underline hover:underline-offset-1">klik di sini</a>.
                 </div>
 
                 {{-- Contact List --}}
@@ -353,7 +357,7 @@
                     }
                     
                     div.innerHTML = `
-                        <div data-id="${msg.id}" class="flex ${msg.direction === 'out' ? 'justify-end' : 'justify-start'} items-start group mb-4 max-w-[70%]">
+                        <div data-id="${msg.id}" class="flex ${msg.direction === 'out' ? 'justify-end' : 'justify-start'} items-start group mb-1 max-w-[70%]">
                             
                             ${msg.direction === 'out' ? `
                             <!-- Tombol Note di kiri untuk pesan keluar -->
@@ -654,6 +658,18 @@
             })
             .catch(err => console.error('Error toggling note:', err));
         }
+
+        // Cek status WhatsApp dari backend
+        const botStatus = @json($botStatus);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const notice = document.getElementById('whatsapp-status-notice');
+            if (botStatus === 'disconnected') {
+                notice.classList.remove('hidden');
+            } else {
+                notice.classList.add('hidden');
+            }
+        });
     </script>
     
     <style>
